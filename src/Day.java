@@ -29,6 +29,7 @@ public class Day {
         for (int i = 0; i < tabHours.length; i++) {
             if (tabHours[i].isLook() == false) {
                 if (best < tabHours[i].getValue()) {
+
                     find = true;
                     best = tabHours[i].getValue();
                     hour = i;
