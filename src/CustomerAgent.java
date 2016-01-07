@@ -12,6 +12,8 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
  */
 public class CustomerAgent extends Agent {
 
+    private boolean leader = false;
+
     protected void setup() {
 
         //On aura peut etre besoin de params
@@ -19,6 +21,15 @@ public class CustomerAgent extends Agent {
         if (args != null && args.length > 0 */
 
         
+    }
+
+    public boolean isLeader()
+    {
+        return leader;
+    }
+    public void setLeader(boolean leader)
+    {
+        this.leader=leader;
     }
 
 }

@@ -27,18 +27,18 @@ public class Day {
     {
         double best=0;
         int hour=0;
-        boolean find=false;
+        boolean find =false;
 
         for(int i=0 ; i < tabHours.length ; i++)
         {
             if(tabHours[i].LookStatus())
-            // return is hour was check or not.
+            // return if hour was check or not.
             // return TRUE : was not check
             // return FALSE: was check, so we don't enter in 'if'
             {
                 if (best < tabHours[i].getValue())
                 {
-                    find=true;
+                    find = true;
                     best = tabHours[i].getValue();
                     hour = i;
                 }
