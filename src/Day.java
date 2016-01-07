@@ -27,6 +27,7 @@ public class Day {
     {
         double best=0;
         int hour=0;
+        boolean find=false;
 
         for(int i=0 ; i < tabHours.length ; i++)
         {
@@ -37,12 +38,22 @@ public class Day {
             {
                 if (best < tabHours[i].getValue())
                 {
+                    find=true;
                     best = tabHours[i].getValue();
                     hour = i;
                 }
             }
         }
-        return tabHours[hour];
+
+        if(find=false)
+        {
+            // this case, is a case of error.
+            // We need to think about it after...
+            Hour not_found = new Hour(0);
+            return not_found;
+        }
+        else
+            return tabHours[hour];
     }
 
 

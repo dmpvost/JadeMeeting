@@ -35,9 +35,10 @@ public class Calendar {
                 best_day = i ;
             }
         }
+        // save that this preference was check.
         tabDays[best_day].getPreferenceHour().beLook();
-        return tabDays[best_day].getPreferenceHour();
         // return Hour object with all information, date, hour and value
+        return tabDays[best_day].getPreferenceHour();
     }
 
 }
