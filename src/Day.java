@@ -30,10 +30,16 @@ public class Day {
 
         for(int i=0 ; i < tabHours.length ; i++)
         {
-            if(best<tabHours[i].getValue())
+            if(tabHours[i].LookStatus())
+            // return is hour was check or not.
+            // return TRUE : was not check
+            // return FALSE: was check, so we don't enter in 'if'
             {
-                best = tabHours[i].getValue();
-                hour = i ;
+                if (best < tabHours[i].getValue())
+                {
+                    best = tabHours[i].getValue();
+                    hour = i;
+                }
             }
         }
         return tabHours[hour];

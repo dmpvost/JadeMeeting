@@ -7,12 +7,13 @@ public class Hour {
     private boolean look;
     /* this variable is for check if they have look this event or not.
     For don't propose 2 times sames events. */
+    // LOOK by default = TRUE, mean CAN BE LOOK.
     private int day;
     /* save the index of the date calendar in hour.*/
 
     public Hour(int day)
     {
-        look = false;
+        look = true;
         this.day = day ;
         double available = Math.random();
         // give 40% to the agent to not be available.
@@ -33,10 +34,18 @@ public class Hour {
         event = value ;
     }
 
+    // save that this hour have been propose to the others agent.
     public void beLook()
     {
-        look=true;
-        // save that the event have been propose to the others.
+        look=false;
+    }
+
+    // return status of Look
+    // TRUE : mean was not check
+    // FALSE : mean was check
+    public boolean LookStatus()
+    {
+        return look;
     }
 
 
