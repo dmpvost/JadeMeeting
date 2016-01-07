@@ -12,7 +12,7 @@ public class Hour {
     /* save the index of the date calendar in hour.*/
 
     public Hour(int day) {
-        look = true;
+        look = false;
         this.day = day;
         double available = Math.random();
         // give 40% to the agent to not be available.
@@ -37,8 +37,6 @@ public class Hour {
     }
 
     // return status of Look
-    // TRUE : mean was not check
-    // FALSE : mean was check
     public boolean isLook() {
         return look;
     }

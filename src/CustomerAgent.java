@@ -23,6 +23,17 @@ public class CustomerAgent extends Agent {
 
     }
 
+    public void whoIsLeader()
+    {
+
+    }
+
+    public void becomeLeader()
+    {
+        /* 1. SEND to other that he become leader
+        * 2. WAIT and check if */
+    }
+
     public boolean isLeader()
     {
         return leader;
