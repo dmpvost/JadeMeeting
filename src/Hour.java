@@ -3,10 +3,17 @@
  */
 public class Hour {
 
-    private double event;
+    private double  event;
+    private boolean look;
+    /* this variable is for check if they have look this event or not.
+    For don't propose 2 times sames events. */
+    private int day;
+    /* save the index of the date calendar in hour.*/
 
-    public Hour()
+    public Hour(int day)
     {
+        look = false;
+        this.day = day ;
         double available = Math.random();
         // give 40% to the agent to not be available.
         if(available<0.4)
@@ -15,18 +22,23 @@ public class Hour {
             event = Math.random() ;
     }
 
-    public boolean getStatus()
+
+    public double getValue()
     {
-        if ( event == 0 )   // Hour is FULL
-            return FALSE;
-        else
-            return TRUE;    // Hour is FREE for meeting
+        return event;
     }
 
-    public void setStatus(int value)
+    public void setValue(int value)
     {
         event = value ;
     }
+
+    public void beLook()
+    {
+        look=true;
+        // save that the event have been propose to the others.
+    }
+
 
 
 }
