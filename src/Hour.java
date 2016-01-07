@@ -9,11 +9,13 @@ public class Hour {
     to not propose 2 times sames events. */
     // LOOK by default = FALSE, mean CAN BE LOOK.
     private int day;
+    private int hour;
     /* save the index of the date calendar in hour.*/
 
-    public Hour(int day) {
+    public Hour(int day,int hour) {
         look = false;
         this.day = day;
+        this.hour= hour;
         double available = Math.random();
         // give 40% to the agent to not be available.
         if (available < 0.4)
@@ -41,5 +43,12 @@ public class Hour {
         return look;
     }
 
+    public int getDay(){
+        return day;
+    }
+
+    public int getHour(){
+        return hour;
+    }
 
 }

@@ -8,7 +8,7 @@ public class Day {
     public Day(int day) {
         tabHours = new Hour[3];
         for (int i = 0; i < tabHours.length; i++) {
-            tabHours[i] = new Hour(day);
+            tabHours[i] = new Hour(day,i);
         }
     }
 
@@ -29,7 +29,6 @@ public class Day {
         for (int i = 0; i < tabHours.length; i++) {
             if (tabHours[i].isLook() == false) {
                 if (best < tabHours[i].getValue()) {
-
                     find = true;
                     best = tabHours[i].getValue();
                     hour = i;
