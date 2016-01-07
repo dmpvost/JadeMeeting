@@ -15,5 +15,18 @@ public class Hour {
             event = Math.random() ;
     }
 
+    public boolean getStatus()
+    {
+        if ( event == 0 )   // Hour is FULL
+            return FALSE;
+        else
+            return TRUE;    // Hour is FREE for meeting
+    }
+
+    public void setStatus(int value)
+    {
+        event = value ;
+    }
+
 
 }
