@@ -31,30 +31,43 @@ public class CustomerAgent extends Agent {
     private AID[] meetingAgents;
 
     protected void setup() {
-        leader = false ;
+        leader = false;
         cal = new Calendar();
 
+        DFAgentDescription dfd = new DFAgentDescription();
+        dfd.setName(getAID());
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType("agent-customer");
+        sd.setName("JADE-meeting-scheduler");
+        dfd.addServices(sd);
+        try {
+            DFService.register(this, dfd);
+        } catch (FIPAException fe) {
+            fe.printStackTrace();
+        }
 
-        //On aura peut etre besoin de params
-       /* Object[] args = getArguments();
-        if (args != null && args.length > 0 */
+        //ADD BEHAVIOUR HERE
+        this.addBehaviour(new leaderBehavior());
+        this.addBehaviour(new waitNewProposalBehavior());
+        this.addBehaviour(new battleLeaderBehavior());
     }
+
     protected void takeDown() {
         System.out.println("Agent " + getAID().getLocalName() + " terminated.");
     }
 
-    public boolean isLeader()
-    {
+    public boolean isLeader() {
         return leader;
     }
-    public void setLeader(boolean leader)
-    {
-        this.leader=leader;
+
+    public void setLeader(boolean leader) {
+        this.leader = leader;
     }
 
 
     private class leaderBehavior extends Behaviour {
         private MessageTemplate messTemplate;
+
         public void action() {
 
             // 1. Become the new leader
@@ -70,7 +83,7 @@ public class CustomerAgent extends Agent {
                 cfp.addReceiver(meetingAgents[i]);
             }
 
-            String proposal_date = meeting.getDay()+"-"+meeting.getHour();
+            String proposal_date = meeting.getDay() + "-" + meeting.getHour();
             cfp.setContent(proposal_date);
             cfp.setConversationId(proposal_date);
             cfp.setReplyWith("cfp" + System.currentTimeMillis()); //unique value
@@ -79,20 +92,25 @@ public class CustomerAgent extends Agent {
             messTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(proposal_date),
                     MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
         }
+
         public boolean done() {
             return true;
         }
     }
 
     private class waitNewProposalBehavior extends Behaviour {
-        public void action() {}
+        public void action() {
+        }
+
         public boolean done() {
             return true;
         }
     }
 
     private class battleLeaderBehavior extends Behaviour {
-        public void action() {}
+        public void action() {
+        }
+
         public boolean done() {
             return true;
         }
