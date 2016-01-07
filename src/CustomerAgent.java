@@ -69,10 +69,12 @@ public class CustomerAgent extends Agent {
             for (int i = 0; i < meetingAgents.length; ++i) {
                 cfp.addReceiver(meetingAgents[i]);
             }
+
             String proposal_date = meeting.getDay()+"-"+meeting.getHour();
             cfp.setContent(proposal_date);
             cfp.setConversationId(proposal_date);
             cfp.setReplyWith("cfp" + System.currentTimeMillis()); //unique value
+
             myAgent.send(cfp);
             messTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(proposal_date),
                     MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
