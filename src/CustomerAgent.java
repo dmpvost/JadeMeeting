@@ -18,7 +18,7 @@ public class CustomerAgent extends Agent {
        /* Object[] args = getArguments();
         if (args != null && args.length > 0 */
 
-        
+
     }
 
 }
