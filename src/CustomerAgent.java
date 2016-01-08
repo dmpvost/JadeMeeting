@@ -104,6 +104,7 @@ public class CustomerAgent extends Agent {
 
                     String proposal_date = meeting.getDay() + "-" + meeting.getHour();
                     cfp.setContent(proposal_date);
+                    cfp.setPerformative(ACLMessage.PROPOSE);
                     cfp.setConversationId("meeting date");
                     cfp.setReplyWith("cfp" + System.currentTimeMillis()); //unique value
 
@@ -147,7 +148,52 @@ public class CustomerAgent extends Agent {
 
                     }
 
-                    //2.
+                    //2. COUNT number of TRUE AND FALSE (totalAgent -1, because leader propose)
+                    //collect proposals
+
+                    /*ACLMessage reply = myAgent.receive(mt);
+                    if (reply != null)
+                    {
+                        if (reply.getPerformative() == ACLMessage.PROPOSE)
+                        {
+                            //proposal received
+                            int price = Integer.parseInt(reply.getContent());
+                            if ((bestSeller == null || price < bestPrice))
+                            {
+                                //the best proposal as for now
+                                bestPrice = price;
+                                bestSeller = reply.getSender();
+                            }
+                        }
+                        repliesCnt++;
+                        if (repliesCnt >= sellerAgents.length) {
+                            //all proposals have been received
+                            step = 2;
+                            if(bestPrice>total_budget)
+                            {
+                                step=4;
+                                targetBookTitle="";
+                                count_time=0;
+                                System.out.println("buyer : No book find on my budget");
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        block(150);
+                        step=1;
+                        count_time++;
+                        System.out.println("DEBUG  count_time:"+count_time);
+                        if(count_time>5)
+                        {
+                            step=4;
+                            count_time=0;
+                            System.out.println("No answer, end of request");
+                            targetBookTitle = "";
+                        }
+                    }*/
+
                     break;
 
                 // ---------- battleLeader --------------------
