@@ -82,11 +82,14 @@ public class CustomerAgent extends Agent {
         private int bestAleat=-1;
         private int repliesCnt = 0;
         private AID bestAgent;
+        private double myAleat=0;
+        private int stepBattle=0;
 
         public void action() {
 
             // init
             step=0;
+            stepBattle=0;
 
             switch (step) {
 
@@ -223,46 +226,56 @@ public class CustomerAgent extends Agent {
 
                     //1. IF count_agree = 1 -> become Leader
                     if ( count_disagree==1)
-                        step=1;
-                        // if the agent are in the BATTLE and count_disagree=1, it's mean that he is alone, so he become Leader
-                    else {
-
-                        double myAleat = sendRandomNumber();
-
-                        //collect proposals
-                        MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-                        ACLMessage reply = myAgent.receive(mt);
-                        if (reply != null)
+                        step=1;     // if the agent are in the BATTLE and count_disagree=1, it's mean that he is alone, so he become Leader
+                    else
+                    {
+                        switch(stepBattle)
                         {
-                            if (reply.getPerformative() == ACLMessage.PROPAGATE)
-                            {
-                                //proposal received
-                                int getAleat = Integer.parseInt(reply.getContent());
+                            // SendRandom number to other agent
+                            case 0:
+                                myAleat = sendRandomNumber();
+                                stepBattle=1;
+                                break;
 
-                                if (bestAgent == null || getAleat < bestAleat)
+                            // Collect all proposals (cycle zone)
+                            case 1:
+                                //collect proposals
+                                MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+                                ACLMessage reply = myAgent.receive(mt);
+                                if (reply != null)
                                 {
-                                    //the best proposal as for now
-                                    bestAleat = getAleat;
-                                    bestAgent = reply.getSender();
-                                }
-                            }
-                            repliesCnt++;
-                            if (repliesCnt >= meetingAgents.length) {
-                                //all proposals have been received
-                                if (myAleat > bestAleat) {
-                                    System.out.println(getAID().getLocalName() + " become the Leader !");
-                                    step=1;
-                                    // WIN THE BATTLE -> become leader
+                                    if (reply.getPerformative() == ACLMessage.PROPAGATE)
+                                    {
+                                        //proposal received
+                                        int getAleat = Integer.parseInt(reply.getContent());
+
+                                        if (bestAgent == null || getAleat < bestAleat)
+                                        {
+                                            //the best proposal as for now
+                                            bestAleat = getAleat;
+                                            bestAgent = reply.getSender();
+                                        }
+                                    }
+                                    repliesCnt++;
+                                    if (repliesCnt >= meetingAgents.length) {
+                                        //all proposals have been received
+                                        if (myAleat > bestAleat) {
+                                            System.out.println(getAID().getLocalName() + " become the Leader !");
+                                            step=1;
+                                            // WIN THE BATTLE -> become leader
+                                        } else {
+                                            step=2;
+                                            // loose the game go to waitNewProposal
+                                        }
+                                        repliesCnt=0;
+                                    }
+
                                 } else {
-                                    step=2;
-                                    // loose the game go to waitNewProposal
+                                    block();
                                 }
-                            }
-
-                        } else {
-                            block();
+                                stepBattle=0;
+                                break;
                         }
-
                     }
 
                     break;
