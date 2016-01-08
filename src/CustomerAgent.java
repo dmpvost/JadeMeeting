@@ -51,7 +51,7 @@ public class CustomerAgent extends Agent {
         this.addBehaviour(new waitNewProposalBehavior());
         this.addBehaviour(new battleLeaderBehavior());
     }
-
+    //vincent
     protected void takeDown() {
         //book selling service deregistration at DF
         try {
