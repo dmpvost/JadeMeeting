@@ -26,6 +26,7 @@ public class CustomerAgent extends Agent {
 
     private boolean leader;
     private Calendar cal;
+    private boolean REFUSE= false;
 
     //list of found CustomerAgent for meeting
     private AID[] meetingAgents;
@@ -153,63 +154,42 @@ public class CustomerAgent extends Agent {
                                 reply.setPerformative(ACLMessage.REFUSE);
                                 reply.setContent("false");
                                 count_disagree++;
+                                REFUSE = true;
                             }
                             myAgent.send(reply);
                         } else {
                             block();
                         }
-                    }//if it's the leader, wait
-                    else {
-
-                    }
-
-                    //2. COUNT number of TRUE AND FALSE (totalAgent -1, because leader propose)
-
-                    //collect proposals
-
-                    /*ACLMessage reply = myAgent.receive(mt);
-                    if (reply != null)
-                    {
-                        if (reply.getPerformative() == ACLMessage.PROPOSE)
-                        {
-                            //proposal received
-                            int price = Integer.parseInt(reply.getContent());
-                            if ((bestSeller == null || price < bestPrice))
-                            {
-                                //the best proposal as for now
-                                bestPrice = price;
-                                bestSeller = reply.getSender();
-                            }
+                    }//for everybody: receive the accepts or not
+                    MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+                    ACLMessage msg = myAgent.receive(mt);
+                    if (msg != null) {
+                        if(msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL){
+                            count_agree++;
+                        }else{
+                            count_disagree++;
                         }
-                        repliesCnt++;
-                        if (repliesCnt >= sellerAgents.length) {
-                            //all proposals have been received
+                    }//if everybody has responded to the proposal, all ACCEPT
+                    if(count_agree == meetingAgents.length){
+                        //go to step 3 battle to know the next leader
+                        step
+
+                    }//if everybody has responded to the proposal some REFUSE
+                    if(count_agree + count_disagree == meetingAgents.length){
+                        //if he is only one to REFUSE: he is the new leader, go to step 1
+                        if(count_disagree == 1 && REFUSE == true){
+                            step = 1;
+                            leader = true;
+                            break;
+                        }else{
                             step = 2;
-                            if(bestPrice>total_budget)
-                            {
-                                step=4;
-                                targetBookTitle="";
-                                count_time=0;
-                                System.out.println("buyer : No book find on my budget");
-                            }
+                            break;
                         }
-
+                        //if multiple and the agent said REFUSE, he goes to battle step 3
+                        if(count_disagree > 1 && REFUSE == true){
+                            step = 3;
+                        }
                     }
-                    else
-                    {
-                        block(150);
-                        step=1;
-                        count_time++;
-                        System.out.println("DEBUG  count_time:"+count_time);
-                        if(count_time>5)
-                        {
-                            step=4;
-                            count_time=0;
-                            System.out.println("No answer, end of request");
-                            targetBookTitle = "";
-                        }
-                    }*/
-
                     break;
 
                 // ---------- battleLeader --------------------
