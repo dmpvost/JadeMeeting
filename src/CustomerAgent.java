@@ -78,6 +78,10 @@ public class CustomerAgent extends Agent {
         private int count_disagree=0;
         private int count_agree=0;
 
+        //schedule
+        String day ;
+        String hour ;
+
         // battle
         private int counter=-1;
         private int bestAleat=-1;
@@ -141,8 +145,8 @@ public class CustomerAgent extends Agent {
                             ACLMessage reply = msg.createReply();
                             //find if the hour and the day is possible for the agent:
                             String[] parts = date.split("-");
-                            String day = parts[0];
-                            String hour = parts[1];
+                            day = parts[0];
+                            hour = parts[1];
                             double possibility = cal.checkFreeHour(Integer.parseInt(day), Integer.parseInt(hour));
                             if (possibility != 0) {
                                 //We can accept the proposition and return true
@@ -171,6 +175,8 @@ public class CustomerAgent extends Agent {
                         }
                     }//if everybody has responded to the proposal, all ACCEPT
                     if(count_agree == meetingAgents.length){
+                        //we fix the schedule
+                        cal.putMeetingInDate(Integer.parseInt(day),Integer.parseInt(hour));
                         //go to step 3 battle to know the next leader
                         step=3;
 
@@ -181,7 +187,8 @@ public class CustomerAgent extends Agent {
                             step = 1;
                             leader = true;
                             break;
-                        }else{
+                        }//else some refuse but not the agent, he waits for proposal step2
+                        else{
                             step = 2;
                             break;
                         }
