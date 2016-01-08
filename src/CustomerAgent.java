@@ -34,7 +34,7 @@ public class CustomerAgent extends Agent {
     protected void setup() {
         leader = false;
 
-        System.out.println("Agent " + getAID().getName() + " START.");
+        System.out.println("Agent " + getAID().getLocalName() + " START.");
 
         cal = new Calendar();
 
@@ -50,6 +50,19 @@ public class CustomerAgent extends Agent {
             fe.printStackTrace();
         }
 
+        // COUNT NUMBER OF AGENT FOR THE MEETING
+        try {
+            DFAgentDescription[] result = DFService.search(this, dfd);
+            System.out.println(getAID().getLocalName() + ": the following agent have been found");
+            meetingAgents = new AID[result.length];
+            for (int i = 0; i < result.length; ++i) {
+                meetingAgents[i] = result[i].getName();
+                System.out.println(meetingAgents[i].getLocalName());
+            }
+        } catch (FIPAException fe) {
+            fe.printStackTrace();
+        }
+
         //ADD BEHAVIOUR HERE
         this.addBehaviour(new masterBehavior());
     }
@@ -61,7 +74,7 @@ public class CustomerAgent extends Agent {
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
-        System.out.println("Agent " + getAID().getName() + " terminated.");
+        System.out.println("Agent " + getAID().getLocalName() + " terminated.");
     }
 
 
@@ -104,7 +117,7 @@ public class CustomerAgent extends Agent {
 
                 // INIT -> WHO IS GOING TO BE Leader
                 case 0:
-                    System.out.println(getAID().getName() + "\t[INIT]:\tINIT");
+                    System.out.println(getAID().getLocalName() + "\t[INIT]:\tINIT");
                     // COUNT Number of agent
                     // numberOfAgent=X;
                     step = 3; // go to find the leader.
@@ -114,11 +127,11 @@ public class CustomerAgent extends Agent {
                 case 1:
                     // 1. Become the new leader
                     setLeader(true);
-                    System.out.println(getAID().getName() + "\t[Leader]:\tbecause LEADER");
+                    System.out.println(getAID().getLocalName() + "\t[Leader]:\tbecause LEADER");
 
                     // 2. Look for the best date to propose a meeting
                     Hour meeting = cal.getBestHour();
-                    System.out.println(getAID().getName() + "\t[Leader]:\tbest time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour());
+                    System.out.println(getAID().getLocalName() + "\t[Leader]:\tbest time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour());
 
                     // 3. Send this date as CFP
                     //call for proposal (CFP) to found agents
@@ -136,12 +149,12 @@ public class CustomerAgent extends Agent {
                     myAgent.send(cfp);
                     messTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(proposal_date),
                             MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
-                    System.out.println(getAID().getName() + "\t[Leader]\t: send request MEETING");
+                    System.out.println(getAID().getLocalName() + "\t[Leader]\t: send request MEETING");
 
                     // 4. switch to waitNewProposal
                     step = 2;
 
-                    System.out.println(getAID().getName() + "\t[Leader]\t: -> waitNewProposal");
+                    System.out.println(getAID().getLocalName() + "\t[Leader]\t: -> waitNewProposal");
                     setLeader(false);
                     break;
 
@@ -151,6 +164,7 @@ public class CustomerAgent extends Agent {
                         //1. if not the leader,
                         if (leader == false) {
                             // a. wait for the leader agent's date for the meeting
+                            System.out.println(getAID().getLocalName() + "\t[waitNewP]:\twait the date of the leader");
                             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                             ACLMessage msg = myAgent.receive(mt);
                             if (msg != null) {
@@ -166,12 +180,14 @@ public class CustomerAgent extends Agent {
                                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                                     reply.setContent("true");
                                     count_agree++;
+                                    System.out.println(getAID().getLocalName() + "\t[waitNewP]:\tACCEPT the date");
                                 } else {
                                     //we have to refuse the proposition
                                     reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
                                     reply.setContent("false");
                                     count_disagree++;
                                     REFUSE = true;
+                                    System.out.println(getAID().getLocalName() + "\t[waitNewP]:\tREFUSE the date");
                                 }
                                 stepWait = true;
                                 myAgent.send(reply);
@@ -194,8 +210,8 @@ public class CustomerAgent extends Agent {
                             //we fix the schedule
                             cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
                             //go to step 3 battle to know the next leader
-
-                            step = 3;
+                            System.out.println(getAID().getLocalName() + "\t[waitNewP]:\tMeeting agree. END");
+                            step = 4;
                             // END OF DEFINE MEETING ? MAYBE WE STOP HERE ?
                         }//if everybody has responded to the proposal some REFUSE
                         if (count_agree + count_disagree == meetingAgents.length) {
@@ -203,14 +219,17 @@ public class CustomerAgent extends Agent {
                             if (count_disagree == 1 && REFUSE == true) {
                                 step = 1;
                                 leader = true;
+                                System.out.println(getAID().getLocalName() + "\t[waitNewP]:\tMeeting REFUSE : NEW LEADER");
                                 //break;
                             }//else some refuse but not the agent, he waits for proposal step2
                             else {
                                 step = 2;
+                                System.out.println(getAID().getLocalName() + "\t[waitNewP]:\tMeeting REFUSE : wait new meeting");
                             }
                             //if multiple and the agent said REFUSE, he goes to battle step 3
                             if (count_disagree > 1 && REFUSE == true) {
                                 step = 3;
+                                System.out.println(getAID().getLocalName() + "\t[waitNewP]:\tMeeting REFUSE : GO BATTLE");
                             }
                         }
                         break;
@@ -219,12 +238,12 @@ public class CustomerAgent extends Agent {
                 case 3:
 
 
-                    System.out.println(getAID().getName() + "\t[battleLeader]:\tEnter in battleLeader");
+                    System.out.println(getAID().getLocalName() + "\t[battleLeader]:\tEnter in battleLeader");
                     // SendRandom number to other agent
                     if (randomNumberSend == false) {
                         myAleat = sendRandomNumber();
                         randomNumberSend = false;
-                        System.out.println(getAID().getName() + "\t[battleLeader]:\tSend random number =" + myAleat);
+                        System.out.println(getAID().getLocalName() + "\t[battleLeader]:\tSend random number =" + myAleat);
                     }
 
                     // Collect all proposals (cycle zone)
@@ -246,12 +265,12 @@ public class CustomerAgent extends Agent {
                         if (repliesCnt >= meetingAgents.length) {
                             //all proposals have been received
                             if (myAleat > bestAleat) {
-                                System.out.println(getAID().getName() + "\t[battleLeader]:\tWIN THE BATTLE with" + myAleat);
+                                System.out.println(getAID().getLocalName() + "\t[battleLeader]:\tWIN THE BATTLE with" + myAleat);
                                 step = 1;
                                 // WIN THE BATTLE -> become leader
                             } else {
                                 step = 2;
-                                System.out.println(getAID().getName() + "\t[battleLeader]:\tLoose the battle :" + myAleat);
+                                System.out.println(getAID().getLocalName() + "\t[battleLeader]:\tLoose the battle :" + myAleat);
                                 // loose the game go to waitNewProposal
                             }
 
@@ -262,6 +281,9 @@ public class CustomerAgent extends Agent {
                     } else {
                         block();
                     }
+                    break;
+                case 4:
+                    System.out.println(getAID().getLocalName() + "\t[END]:\tEND");
                     break;
 
             }
