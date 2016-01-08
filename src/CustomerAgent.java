@@ -40,7 +40,7 @@ public class CustomerAgent extends Agent {
 
 
         // ADD ALL AGENTS IN TABLE meetingAgents
-        AMSAgentDescription [] agents = null;
+        /*AMSAgentDescription [] agents = null;
         try {
             SearchConstraints c = new SearchConstraints();
             c.setMaxResults ( new Long(-1) );
@@ -52,7 +52,10 @@ public class CustomerAgent extends Agent {
         for (int i=0; i<agents.length;i++){
             AID meetingAgents = agents[i].getName();
             System.out.println("==>"+meetingAgents.getLocalName());
-        }
+        }*/
+
+
+
 
         //time interval for buyer for sending subsequent CFP
         //as a CLI argument
@@ -63,21 +66,28 @@ public class CustomerAgent extends Agent {
         {
             protected void onTick()
             {
+                // DFAgentDescription
                 DFAgentDescription dfd = new DFAgentDescription();
-                dfd.setName(getAID());
                 ServiceDescription sd = new ServiceDescription();
                 sd.setType("agent-customer");
-                sd.setName("JADE-meeting-scheduler");
                 dfd.addServices(sd);
-                try {
-                    DFService.register(myAgent, dfd);
-                } catch (FIPAException fe) {
+
+                try
+                {
+                    DFAgentDescription[] result  = DFService.search(myAgent, dfd);
+                    System.out.println(getAID().getLocalName() + ": the following AGENT have been found");
+                    meetingAgents = new AID[result.length];
+                    for (int i = 0; i < result.length; ++i)
+                    {
+                        meetingAgents[i] = result[i].getName();
+                        System.out.println(meetingAgents[i].getLocalName());
+                    }
+                }
+                catch (FIPAException fe) {
                     fe.printStackTrace();
                 }
 
-
                 //ADD BEHAVIOUR HERE
-                //this.addBehaviour(new masterBehavior());
                 myAgent.addBehaviour(new masterBehavior());
             }
 
@@ -256,7 +266,6 @@ public class CustomerAgent extends Agent {
                     }
                     // ---------- battleLeader --------------------
                 case 3:
-
 
                     System.out.println(getAID().getLocalName() + "\t[battleLeader]:\tEnter in battleLeader");
                     // SendRandom number to other agent
