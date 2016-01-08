@@ -136,10 +136,12 @@ public class CustomerAgent extends Agent {
                                 //We can accept the proposition and return true
                                 reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                                 reply.setContent("true");
+                                count_agree++;
                             } else {
                                 //we have to refuse the proposition
                                 reply.setPerformative(ACLMessage.REFUSE);
                                 reply.setContent("false");
+                                count_disagree++;
                             }
                             myAgent.send(reply);
                         } else {
@@ -210,6 +212,9 @@ public class CustomerAgent extends Agent {
                         Bigger number -> LeaderBehavior
                         The others -> WaitNewProposalBehavior
                      */
+
+                    //1. IF count_agree = 1 -> become Leader
+                    if ( count_disagree==1)
 
                     ACLMessage reply = myAgent.receive(mt);
                     if (reply != null)
