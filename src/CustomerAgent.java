@@ -77,6 +77,8 @@ public class CustomerAgent extends Agent {
         private int step = 0 ;
         private MessageTemplate messTemplate;
         private int numberOfAgent=0;
+        private int count_disagree=0;
+        private int count_agree=0;
 
         public void action() {
             switch (step) {
@@ -149,6 +151,7 @@ public class CustomerAgent extends Agent {
                     }
 
                     //2. COUNT number of TRUE AND FALSE (totalAgent -1, because leader propose)
+
                     //collect proposals
 
                     /*ACLMessage reply = myAgent.receive(mt);
@@ -198,6 +201,61 @@ public class CustomerAgent extends Agent {
 
                 // ---------- battleLeader --------------------
                 case 3:
+                    /*
+                    BattleLeaderBehavior
+                    1.Collect number or FALSE -> if equal 1
+                        => become LeaderBehavior
+                        IF > 2 ,  send/share random number.
+                    2.An agent collect all random number, compare his to the rest, if his number is the biggest he becomes the leader.
+                        Bigger number -> LeaderBehavior
+                        The others -> WaitNewProposalBehavior
+                     */
+
+                    ACLMessage reply = myAgent.receive(mt);
+                    if (reply != null)
+                    {
+                        if (reply.getPerformative() == ACLMessage.PROPOSE)
+                        {
+                            //proposal received
+                            int price = Integer.parseInt(reply.getContent());
+                            if ((bestSeller == null || price < bestPrice))
+                            {
+                                //the best proposal as for now
+                                bestPrice = price;
+                                bestSeller = reply.getSender();
+                            }
+                        }
+                        repliesCnt++;
+                        if (repliesCnt >= sellerAgents.length) {
+                            //all proposals have been received
+                            step = 2;
+                            if(bestPrice>total_budget)
+                            {
+                                step=4;
+                                targetBookTitle="";
+                                count_time=0;
+                                System.out.println("buyer : No book find on my budget");
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        block(150);
+                        step=1;
+                        count_time++;
+                        System.out.println("DEBUG  count_time:"+count_time);
+                        if(count_time>5)
+                        {
+                            step=4;
+                            count_time=0;
+                            System.out.println("No answer, end of request");
+                            targetBookTitle = "";
+                        }
+                    }
+
+
+
                     break;
 
             }
