@@ -186,11 +186,11 @@ public class CustomerAgent extends Agent {
                         if(count_disagree == 1 && REFUSE == true){
                             step = 1;
                             leader = true;
-                            break;
+                            //break;
                         }//else some refuse but not the agent, he waits for proposal step2
                         else{
                             step = 2;
-                            break;
+                            //break;
                         }
                         //if multiple and the agent said REFUSE, he goes to battle step 3
                         if(count_disagree > 1 && REFUSE == true){
