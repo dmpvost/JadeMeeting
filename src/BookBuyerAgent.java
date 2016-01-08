@@ -39,7 +39,7 @@ public class BookBuyerAgent extends Agent {
                 }
                 //search only if the purchase task was ordered
                 if (!targetBookTitle.equals("")) {
-                    System.out.println(getAID().getLocalName() + ": I'm looking for " + targetBookTitle);
+                    //log(": I'm looking for " + targetBookTitle);
                     //update a list of known sellers (DF)
                     DFAgentDescription template = new DFAgentDescription();
                     ServiceDescription sd = new ServiceDescription();
