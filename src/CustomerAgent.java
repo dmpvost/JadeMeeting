@@ -122,7 +122,7 @@ public class CustomerAgent extends Agent {
 
                     String proposal_date = meeting.getDay() + "-" + meeting.getHour();
                     cfp.setContent(proposal_date);
-                    //cfp.setPerformative(ACLMessage.PROPOSE); ???? we need to put this or not ?
+                    cfp.setPerformative(ACLMessage.PROPOSE); //???? we need to put this or not ?
                     cfp.setConversationId("meeting date");
                     cfp.setReplyWith("cfp" + System.currentTimeMillis()); //unique value
 
@@ -155,7 +155,7 @@ public class CustomerAgent extends Agent {
                                 count_agree++;
                             } else {
                                 //we have to refuse the proposition
-                                reply.setPerformative(ACLMessage.REFUSE);
+                                reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
                                 reply.setContent("false");
                                 count_disagree++;
                                 REFUSE = true;
@@ -168,18 +168,17 @@ public class CustomerAgent extends Agent {
                     MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                     ACLMessage msg = myAgent.receive(mt);
                     if (msg != null) {
-                        if(msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL){
+                        if(msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
                             count_agree++;
-                        }else{
+                        if(msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
                             count_disagree++;
-                        }
                     }//if everybody has responded to the proposal, all ACCEPT
                     if(count_agree == meetingAgents.length){
                         //we fix the schedule
                         cal.putMeetingInDate(Integer.parseInt(day),Integer.parseInt(hour));
                         //go to step 3 battle to know the next leader
                         step=3;
-
+                        // END OF DEFINE MEETING ? MAYBE WE STOP HERE ?
                     }//if everybody has responded to the proposal some REFUSE
                     if(count_agree + count_disagree == meetingAgents.length){
                         //if he is only one to REFUSE: he is the new leader, go to step 1
@@ -201,15 +200,6 @@ public class CustomerAgent extends Agent {
 
                 // ---------- battleLeader --------------------
                 case 3:
-                    /*
-                    BattleLeaderBehavior
-                    1.Collect number or FALSE -> if equal 1
-                        => become LeaderBehavior
-                        IF > 2 ,  send/share random number.
-                    2.An agent collect all random number, compare his to the rest, if his number is the biggest he becomes the leader.
-                        Bigger number -> LeaderBehavior
-                        The others -> WaitNewProposalBehavior
-                     */
 
                     //1. IF count_agree = 1 -> become Leader
                     if ( count_disagree==1)
