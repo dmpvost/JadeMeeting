@@ -26,7 +26,7 @@ public class CustomerAgent extends Agent {
 
     private boolean leader;
     private Calendar cal;
-    private boolean REFUSE= false;
+    private boolean REFUSE = false;
 
     //list of found CustomerAgent for meeting
     private AID[] meetingAgents;
@@ -72,29 +72,30 @@ public class CustomerAgent extends Agent {
 
 
     private class masterBehavior extends Behaviour {
-        private int step = 0 ;
+        private int step = 0;
         private MessageTemplate messTemplate;
-        private int numberOfAgent=0;
-        private int count_disagree=0;
-        private int count_agree=0;
+        private int numberOfAgent = 0;
+        private int count_disagree = 0;
+        private int count_agree = 0;
 
         //schedule
-        String day ;
-        String hour ;
+        private String day;
+        private String hour;
+        private boolean stepWait = false;
 
         // battle
-        private int counter=-1;
-        private int bestAleat=-1;
+        private int counter = -1;
+        private int bestAleat = -1;
         private int repliesCnt = 0;
         private AID bestAgent;
-        private double myAleat=0;
-        private int stepBattle=0;
+        private double myAleat = 0;
+        private int stepBattle = 0;
 
         public void action() {
 
             // init
-            step=0;
-            stepBattle=0;
+            step = 0;
+            stepBattle = 0;
 
             switch (step) {
 
@@ -102,7 +103,7 @@ public class CustomerAgent extends Agent {
                 case 0:
                     // COUNT Number of agent
                     // numberOfAgent=X;
-                    step=3; // go to find the leader.
+                    step = 3; // go to find the leader.
                     break;
 
                 // ---------- Leader --------------------
@@ -130,84 +131,86 @@ public class CustomerAgent extends Agent {
                     messTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(proposal_date),
                             MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
                     // 4. switch to waitNewProposal
-                    step=2;
+                    step = 2;
                     break;
 
                 // ---------- waitNewProposal --------------------
                 case 2:
-                    //1. if not the leader
-                    if (leader == false)
-                    {
-                        // a. wait for the leader agent's date for the meeting
+                    if (stepWait == false) {
+                        //1. if not the leader,
+                        if (leader == false) {
+                            // a. wait for the leader agent's date for the meeting
+                            MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+                            ACLMessage msg = myAgent.receive(mt);
+                            if (msg != null) {
+                                String date = msg.getContent();
+                                ACLMessage reply = msg.createReply();
+                                //find if the hour and the day is possible for the agent:
+                                String[] parts = date.split("-");
+                                day = parts[0];
+                                hour = parts[1];
+                                double possibility = cal.checkFreeHour(Integer.parseInt(day), Integer.parseInt(hour));
+                                if (possibility != 0) {
+                                    //We can accept the proposition and return true
+                                    reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                                    reply.setContent("true");
+                                    count_agree++;
+                                } else {
+                                    //we have to refuse the proposition
+                                    reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+                                    reply.setContent("false");
+                                    count_disagree++;
+                                    REFUSE = true;
+                                }
+                                stepWait =true;
+                                myAgent.send(reply);
+
+                            } else {
+                                block();
+                            }
+                        }
+                    } else if (stepWait == true) {
+                        //for everybody: receive the responses
                         MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                         ACLMessage msg = myAgent.receive(mt);
                         if (msg != null) {
-                            String date = msg.getContent();
-                            ACLMessage reply = msg.createReply();
-                            //find if the hour and the day is possible for the agent:
-                            String[] parts = date.split("-");
-                            day = parts[0];
-                            hour = parts[1];
-                            double possibility = cal.checkFreeHour(Integer.parseInt(day), Integer.parseInt(hour));
-                            if (possibility != 0) {
-                                //We can accept the proposition and return true
-                                reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-                                reply.setContent("true");
+                            if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
                                 count_agree++;
-                            } else {
-                                //we have to refuse the proposition
-                                reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
-                                reply.setContent("false");
+                            if (msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
                                 count_disagree++;
-                                REFUSE = true;
-                            }
-                            myAgent.send(reply);
-                        } else {
-                            block();
-                        }
-                    }//for everybody: receive the accepts or not
-                    MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-                    ACLMessage msg = myAgent.receive(mt);
-                    if (msg != null) {
-                        if(msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
-                            count_agree++;
-                        if(msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
-                            count_disagree++;
-                    }//if everybody has responded to the proposal, all ACCEPT
-                    if(count_agree == meetingAgents.length){
-                        //we fix the schedule
-                        cal.putMeetingInDate(Integer.parseInt(day),Integer.parseInt(hour));
-                        //go to step 3 battle to know the next leader
-                        step=3;
-                        // END OF DEFINE MEETING ? MAYBE WE STOP HERE ?
-                    }//if everybody has responded to the proposal some REFUSE
-                    if(count_agree + count_disagree == meetingAgents.length){
-                        //if he is only one to REFUSE: he is the new leader, go to step 1
-                        if(count_disagree == 1 && REFUSE == true){
-                            step = 1;
-                            leader = true;
-                            //break;
-                        }//else some refuse but not the agent, he waits for proposal step2
-                        else{
-                            step = 2;
-                            //break;
-                        }
-                        //if multiple and the agent said REFUSE, he goes to battle step 3
-                        if(count_disagree > 1 && REFUSE == true){
+                        }//if everybody has responded to the proposal, all ACCEPT
+                        if (count_agree == meetingAgents.length) {
+                            //we fix the schedule
+                            cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
+                            //go to step 3 battle to know the next leader
                             step = 3;
+                            // END OF DEFINE MEETING ? MAYBE WE STOP HERE ?
+                        }//if everybody has responded to the proposal some REFUSE
+                        if (count_agree + count_disagree == meetingAgents.length) {
+                            //if he is only one to REFUSE: he is the new leader, go to step 1
+                            if (count_disagree == 1 && REFUSE == true) {
+                                step = 1;
+                                leader = true;
+                                //break;
+                            }//else some refuse but not the agent, he waits for proposal step2
+                            else {
+                                step = 2;
+                            }
+                            //if multiple and the agent said REFUSE, he goes to battle step 3
+                            if (count_disagree > 1 && REFUSE == true) {
+                                step = 3;
+                            }
                         }
+                        break;
                     }
-                    break;
-
-                // ---------- battleLeader --------------------
+                    // ---------- battleLeader --------------------
                 case 3:
 
-                    switch(stepBattle)
-                    {
+                    switch (stepBattle) {
                         // SendRandom number to other agent
                         case 0:
                             myAleat = sendRandomNumber();
-                            stepBattle=1;
+                            stepBattle = 1;
                             break;
 
                         // Collect all proposals (cycle zone)
@@ -215,15 +218,12 @@ public class CustomerAgent extends Agent {
                             //collect proposals
                             mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                             ACLMessage reply = myAgent.receive(mt);
-                            if (reply != null)
-                            {
-                                if (reply.getPerformative() == ACLMessage.PROPAGATE)
-                                {
+                            if (reply != null) {
+                                if (reply.getPerformative() == ACLMessage.PROPAGATE) {
                                     //proposal received
                                     int getAleat = Integer.parseInt(reply.getContent());
 
-                                    if (bestAgent == null || getAleat < bestAleat)
-                                    {
+                                    if (bestAgent == null || getAleat < bestAleat) {
                                         //the best proposal as for now
                                         bestAleat = getAleat;
                                         bestAgent = reply.getSender();
@@ -234,19 +234,19 @@ public class CustomerAgent extends Agent {
                                     //all proposals have been received
                                     if (myAleat > bestAleat) {
                                         System.out.println(getAID().getLocalName() + " become the Leader !");
-                                        step=1;
+                                        step = 1;
                                         // WIN THE BATTLE -> become leader
                                     } else {
-                                        step=2;
+                                        step = 2;
                                         // loose the game go to waitNewProposal
                                     }
-                                    repliesCnt=0;
+                                    repliesCnt = 0;
                                 }
 
                             } else {
                                 block();
                             }
-                            stepBattle=0;
+                            stepBattle = 0;
                             break;
                     }
                     break;
@@ -259,11 +259,9 @@ public class CustomerAgent extends Agent {
         }
 
 
-
-        public double sendRandomNumber()
-        {
+        public double sendRandomNumber() {
             double aleat = Math.random();
-            ACLMessage sendMess = new ACLMessage( ACLMessage.CFP);
+            ACLMessage sendMess = new ACLMessage(ACLMessage.CFP);
             sendMess.setPerformative(ACLMessage.PROPAGATE);
             sendMess.setContent(String.valueOf((aleat)));
             myAgent.send(sendMess);
@@ -271,10 +269,7 @@ public class CustomerAgent extends Agent {
         }
 
 
-
-
     }
-
 
 
 }
