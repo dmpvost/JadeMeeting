@@ -71,7 +71,7 @@ public class CustomerAgent extends Agent {
         this.leader = leader;
     }
 
-
+//SWITCH CASSSEE///////////////////////////
     private class leaderBehavior extends Behaviour {
         private MessageTemplate messTemplate;
 
