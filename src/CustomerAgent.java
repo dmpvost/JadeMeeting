@@ -20,7 +20,8 @@ import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-
+import jade.domain.AMSService;
+import jade.domain.FIPAAgentManagement.*;
 
 public class CustomerAgent extends Agent {
 
@@ -32,40 +33,58 @@ public class CustomerAgent extends Agent {
     private AID[] meetingAgents;
 
     protected void setup() {
+
         leader = false;
-
         System.out.println("Agent " + getAID().getLocalName() + " START.");
-
         cal = new Calendar();
 
-        DFAgentDescription dfd = new DFAgentDescription();
-        dfd.setName(getAID());
-        ServiceDescription sd = new ServiceDescription();
-        sd.setType("agent-customer");
-        sd.setName("JADE-meeting-scheduler");
-        dfd.addServices(sd);
+
+        // ADD ALL AGENTS IN TABLE meetingAgents
+        AMSAgentDescription [] agents = null;
         try {
-            DFService.register(this, dfd);
-        } catch (FIPAException fe) {
+            SearchConstraints c = new SearchConstraints();
+            c.setMaxResults ( new Long(-1) );
+            agents = AMSService.search( this, new AMSAgentDescription (), c );
+        }
+        catch (FIPAException fe) {
             fe.printStackTrace();
+        }
+        for (int i=0; i<agents.length;i++){
+            AID meetingAgents = agents[i].getName();
+            System.out.println("==>"+meetingAgents.getLocalName());
         }
 
-        // COUNT NUMBER OF AGENT FOR THE MEETING
-        try {
-            DFAgentDescription[] result = DFService.search(this, dfd);
-            System.out.println(getAID().getLocalName() + ": the following agent have been found");
-            meetingAgents = new AID[result.length];
-            for (int i = 0; i < result.length; ++i) {
-                meetingAgents[i] = result[i].getName();
-                System.out.println(meetingAgents[i].getLocalName());
+        //time interval for buyer for sending subsequent CFP
+        //as a CLI argument
+        int interval = 20000;
+        Object[] args = getArguments();
+        if (args != null && args.length > 0) interval = Integer.parseInt(args[0].toString());
+        addBehaviour(new TickerBehaviour(this, interval)
+        {
+            protected void onTick()
+            {
+                DFAgentDescription dfd = new DFAgentDescription();
+                dfd.setName(getAID());
+                ServiceDescription sd = new ServiceDescription();
+                sd.setType("agent-customer");
+                sd.setName("JADE-meeting-scheduler");
+                dfd.addServices(sd);
+                try {
+                    DFService.register(myAgent, dfd);
+                } catch (FIPAException fe) {
+                    fe.printStackTrace();
+                }
+
+
+                //ADD BEHAVIOUR HERE
+                //this.addBehaviour(new masterBehavior());
+                myAgent.addBehaviour(new masterBehavior());
             }
-        } catch (FIPAException fe) {
-            fe.printStackTrace();
-        }
-//vincent
-        int a=0;
-        //ADD BEHAVIOUR HERE
-        this.addBehaviour(new masterBehavior());
+
+        });
+
+
+
     }
 
     protected void takeDown() {
@@ -291,6 +310,7 @@ public class CustomerAgent extends Agent {
         }
 
         public boolean done() {
+            System.out.println(getAID().getLocalName() + " ?? OUT WITH DONE");
             return true;
         }
 

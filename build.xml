@@ -20,7 +20,7 @@
   <target name="run" description="create agents" >
     <java fork="true" classpath="jade/lib/jade.jar;build" classname="jade.Boot">
       <arg value="-gui" />
-      <arg value="Arthur:CustomerAgent();Marc:CustomerAgent();Paul:CustomerAgent()" />
+      <arg value="Arthur:CustomerAgent(5000);Marc:CustomerAgent(5000);Paul:CustomerAgent(5000)" />
     </java>
   </target>
 </project>
