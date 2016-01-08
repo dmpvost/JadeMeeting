@@ -271,7 +271,7 @@ public class CustomerAgent extends Agent {
                     // ---------- battleLeader --------------------
                 case 3:
 
-                    log("\t[battleLeader]:\tEnter in battleLeader");
+                    log("\t[battleLeader]:\tEnter in battleLeader randomNumberSend="+randomNumberSend);
                     // SendRandom number to other agent
                     if (randomNumberSend == false) {
                         myAleat = sendRandomNumber();
@@ -323,7 +323,7 @@ public class CustomerAgent extends Agent {
         }
 
         public boolean done() {
-            log(" --> DONE");
+            log(" --> DONE step="+step+" randomNumberSend="+randomNumberSend);
             if (step==4)
                 return true;
             else
