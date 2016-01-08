@@ -172,7 +172,7 @@ public class CustomerAgent extends Agent {
                     }//if everybody has responded to the proposal, all ACCEPT
                     if(count_agree == meetingAgents.length){
                         //go to step 3 battle to know the next leader
-                        step
+                        step=3;
 
                     }//if everybody has responded to the proposal some REFUSE
                     if(count_agree + count_disagree == meetingAgents.length){
