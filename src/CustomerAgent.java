@@ -62,7 +62,8 @@ public class CustomerAgent extends Agent {
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
-
+//vincent
+        int a=0;
         //ADD BEHAVIOUR HERE
         this.addBehaviour(new masterBehavior());
     }
