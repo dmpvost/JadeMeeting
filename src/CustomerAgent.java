@@ -31,7 +31,7 @@ public class CustomerAgent extends Agent {
     private boolean leader;
     private Calendar cal;
     private boolean REFUSE = false;
-
+    private boolean done_exec=false;
     //list of found CustomerAgent for meeting
     private AID[] meetingAgents;
 
@@ -67,33 +67,33 @@ public class CustomerAgent extends Agent {
         if (args != null && args.length > 0) interval = Integer.parseInt(args[0].toString());
         addBehaviour(new TickerBehaviour(this, interval)
         {
-            protected void onTick()
-            {
-                // DFAgentDescription
-                DFAgentDescription dfd = new DFAgentDescription();
-                ServiceDescription sd = new ServiceDescription();
-                sd.setType("agent-customer");
-                dfd.addServices(sd);
+            protected void onTick() {
+                if (done_exec == false) {
+                    // DFAgentDescription
+                    DFAgentDescription dfd = new DFAgentDescription();
+                    ServiceDescription sd = new ServiceDescription();
+                    sd.setType("agent-customer");
+                    dfd.addServices(sd);
 
-                try
-                {   SearchConstraints c = new SearchConstraints();
-                    c.setMaxResults ( new Long(-1) );
-                    AMSAgentDescription [] agents = AMSService.search( myAgent, new AMSAgentDescription (), c );
-                    //DFAgentDescription[] result  = DFService.search(myAgent, dfd);
-                    System.out.println(": the following AGENT have been found");
-                    meetingAgents = new AID[agents.length];
-                    for (int i = 0; i < agents.length; ++i)
-                    {
-                        meetingAgents[i] = agents[i].getName();
-                        System.out.println(meetingAgents[i].getLocalName());
+                    try {
+                        SearchConstraints c = new SearchConstraints();
+                        c.setMaxResults(new Long(-1));
+                        AMSAgentDescription[] agents = AMSService.search(myAgent, new AMSAgentDescription(), c);
+                        //DFAgentDescription[] result  = DFService.search(myAgent, dfd);
+                        System.out.println(": the following AGENT have been found");
+                        meetingAgents = new AID[agents.length];
+                        for (int i = 0; i < agents.length; ++i) {
+                            meetingAgents[i] = agents[i].getName();
+                            System.out.println(meetingAgents[i].getLocalName());
+                        }
+                    } catch (FIPAException fe) {
+                        fe.printStackTrace();
                     }
-                }
-                catch (FIPAException fe) {
-                    fe.printStackTrace();
-                }
 
-                //ADD BEHAVIOUR HERE
-                myAgent.addBehaviour(new masterBehavior());
+                    //ADD BEHAVIOUR HERE
+                    done_exec=true;
+                    myAgent.addBehaviour(new masterBehavior());
+                }
             }
 
         });
