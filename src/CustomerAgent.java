@@ -47,9 +47,6 @@ public class CustomerAgent extends Agent {
         }
 
         //ADD BEHAVIOUR HERE
-        this.addBehaviour(new leaderBehavior());
-        this.addBehaviour(new waitNewProposalBehavior());
-        this.addBehaviour(new battleLeaderBehavior());
         this.addBehaviour(new masterBehavior());
     }
 
@@ -73,6 +70,9 @@ public class CustomerAgent extends Agent {
     }
 
 
+
+
+
     private class masterBehavior extends Behaviour {
         private int step = 0 ;
         private MessageTemplate messTemplate;
@@ -80,13 +80,24 @@ public class CustomerAgent extends Agent {
         private int count_disagree=0;
         private int count_agree=0;
 
+        // battle
+        private int counter=-1;
+        private int bestAleat=-1;
+        private int repliesCnt = 0;
+        private AID bestAgent;
+
         public void action() {
+
+            // init
+            step=0;
+
             switch (step) {
 
                 // INIT -> WHO IS GOING TO BE Leader
                 case 0:
                     // COUNT Number of agent
                     // numberOfAgent=X;
+                    step=3; // go to find the leader.
                     break;
 
                 // ---------- Leader --------------------
@@ -106,7 +117,7 @@ public class CustomerAgent extends Agent {
 
                     String proposal_date = meeting.getDay() + "-" + meeting.getHour();
                     cfp.setContent(proposal_date);
-                    cfp.setPerformative(ACLMessage.PROPOSE);
+                    //cfp.setPerformative(ACLMessage.PROPOSE); ???? we need to put this or not ?
                     cfp.setConversationId("meeting date");
                     cfp.setReplyWith("cfp" + System.currentTimeMillis()); //unique value
 
@@ -215,51 +226,16 @@ public class CustomerAgent extends Agent {
 
                     //1. IF count_agree = 1 -> become Leader
                     if ( count_disagree==1)
-
-                    ACLMessage reply = myAgent.receive(mt);
-                    if (reply != null)
-                    {
-                        if (reply.getPerformative() == ACLMessage.PROPOSE)
-                        {
-                            //proposal received
-                            int price = Integer.parseInt(reply.getContent());
-                            if ((bestSeller == null || price < bestPrice))
-                            {
-                                //the best proposal as for now
-                                bestPrice = price;
-                                bestSeller = reply.getSender();
-                            }
-                        }
-                        repliesCnt++;
-                        if (repliesCnt >= sellerAgents.length) {
-                            //all proposals have been received
-                            step = 2;
-                            if(bestPrice>total_budget)
-                            {
-                                step=4;
-                                targetBookTitle="";
-                                count_time=0;
-                                System.out.println("buyer : No book find on my budget");
-                            }
-                        }
-
-                    }
-                    else
-                    {
-                        block(150);
                         step=1;
-                        count_time++;
-                        System.out.println("DEBUG  count_time:"+count_time);
-                        if(count_time>5)
-                        {
-                            step=4;
-                            count_time=0;
-                            System.out.println("No answer, end of request");
-                            targetBookTitle = "";
+                    else {
+                        if(startBattle()==true) {
+                            step=1; // win battle
+                            // become the Leader
+                        } else {
+                            step=2; // loose battle
+                            // waitNewProposal
                         }
                     }
-
-
 
                     break;
 
@@ -269,41 +245,63 @@ public class CustomerAgent extends Agent {
         public boolean done() {
             return true;
         }
+
+        public boolean startBattle()
+        {
+            double aleat = sendRandomNumber();
+            return getResult(aleat);
+        }
+
+        public double sendRandomNumber()
+        {
+            double aleat = Math.random();
+
+            ACLMessage send = new ACLMessage( ACLMessage.CFP );
+            send.setPerformative(ACLMessage.PROPAGATE);
+            send.setContent(String.valueOf((aleat));
+
+            return aleat;
+        }
+
+        public boolean getResult(double myAleat)
+        {
+
+            //collect proposals
+            MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+            ACLMessage reply = myAgent.receive(mt);
+            if (reply != null) {
+                if (reply.getPerformative() == ACLMessage.PROPAGATE)
+                {
+                    //proposal received
+                    int getAleat = Integer.parseInt(reply.getContent());
+
+                    if (bestAgent == null || getAleat < bestAleat)
+                    {
+                        //the best proposal as for now
+                        bestAleat = getAleat;
+                        bestAgent = reply.getSender();
+                    }
+                }
+                repliesCnt++;
+                if (repliesCnt >= meetingAgents.length) {
+                    //all proposals have been received
+                    if (myAleat > bestAleat) {
+                        System.out.println(getAID().getLocalName() + " become the Leader !");
+                        return true;
+                    } else {
+                        return false;
+                        // loose the game go to waitNewProposal
+                    }
+                }
+
+            } else {
+                block();
+            }
+        }
+
+
     }
 
-//SWITCH CASSSEE///////////////////////////
-    private class leaderBehavior extends Behaviour {
 
-
-        public void action() {
-
-
-        }
-
-        public boolean done() {
-            return true;
-        }
-    }
-
-    private class waitNewProposalBehavior extends Behaviour {
-        public void action() {
-
-
-
-        }
-
-        public boolean done() {
-            return true;
-        }
-    }
-
-    private class battleLeaderBehavior extends Behaviour {
-        public void action() {
-        }
-
-        public boolean done() {
-            return true;
-        }
-    }
 
 }
