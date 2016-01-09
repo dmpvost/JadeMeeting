@@ -199,6 +199,9 @@ public class CustomerAgent extends Agent {
                         //1. if not the leader,
                         if (leader == false)
                         {
+
+                            count_agree++; // simulate that the leader agree
+
                             // a. wait for the leader agent's date for the meeting
                             log("[waitNewP]:wait the date of the leader");
                             pauseProg();
@@ -252,7 +255,7 @@ public class CustomerAgent extends Agent {
                         //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                         //ACLMessage msg = myAgent.receive(mt);
                         ACLMessage msg = receive();
-                        if (msg != null)
+                        if (msg != null || (count_agree + count_disagree == meetingAgents.length))
                         {
 
                             if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
@@ -265,7 +268,7 @@ public class CustomerAgent extends Agent {
                             {
                                 //we fix the schedule
                                 log("[waitNewP]:Meeting AGREE. END");
-                                cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
+                                //cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
                                 //go to step 3 battle to know the next leader
                                 pauseProg();
                                 step = 4;
@@ -276,7 +279,7 @@ public class CustomerAgent extends Agent {
                             if (count_agree + count_disagree == meetingAgents.length)
                             {
                                 leader = false;
-
+                                log("TAKE DECISION");
                                 //if he is only one to REFUSE: he is the new leader, go to step 1
                                 if (count_disagree == 1 && REFUSE == true)
                                 {
