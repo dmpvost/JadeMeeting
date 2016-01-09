@@ -31,12 +31,34 @@ public class CustomerAgent extends Agent {
     private AID[] meetingAgents;
     //private int step=0;
 
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+
+    private String color;
+
     protected void setup() {
 
         leader = false;
         log(" START");
         cal = new Calendar();
 
+
+
+        if(this.getLocalName().equals("Arthur"))
+        {
+            color=ANSI_BLUE;
+        }
+        else
+        {
+            color=ANSI_CYAN;
+        }
 
         // ----------- NOT DELETE ---------------------------------
         // ADD ALL AGENTS IN TABLE meetingAgents
@@ -188,7 +210,7 @@ public class CustomerAgent extends Agent {
                     myAgent.send(cfp);
                     //messTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(proposal_date),
                       //      MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
-                    logV("[<-][SEND] request MEETING",count_agree,count_disagree,ACCEPT);
+                    logSEND("request MEETING", count_agree, count_disagree, ACCEPT);
                     pauseProg();
                     // 4. switch to waitNewProposal
                     step = 2;
@@ -225,7 +247,7 @@ public class CustomerAgent extends Agent {
                                 hour = parts[1];
                                 count_agree++; // simule le choix du leader
 
-                                logV("[->][RECV] message from ["+msg.getSender().getLocalName()+"]",count_agree, count_disagree, ACCEPT);
+                                logRECV("message from [" + msg.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT);
 
                                 double possibility = cal.checkFreeHour(Integer.parseInt(day), Integer.parseInt(hour));
                                 if (possibility != 0)
@@ -235,7 +257,7 @@ public class CustomerAgent extends Agent {
                                     reply.setContent("true");
                                     count_agree++;
                                     ACCEPT = true;
-                                    logV("[<-][SEND]ACCEPT the date",count_agree,count_disagree,ACCEPT);
+                                    logSEND("ACCEPT the date", count_agree, count_disagree, ACCEPT);
                                     pauseProg();
                                 }
                                 else
@@ -245,7 +267,7 @@ public class CustomerAgent extends Agent {
                                     reply.setContent("false");
                                     count_disagree++;
                                     ACCEPT = false;
-                                    logV("[<-][SEND]REFUSE the date",count_agree,count_disagree,ACCEPT);
+                                    logSEND("REFUSE the date", count_agree, count_disagree, ACCEPT);
                                     pauseProg();
                                 }
                                 stepWait = true;
@@ -271,7 +293,7 @@ public class CustomerAgent extends Agent {
                         if ( ( msg != null || count_agree + count_disagree == meetingAgents.length))
                         {
                             if(msg !=null) {
-                                logV("[->][RECV] message from [" + msg.getSender().getLocalName() + "]",count_agree, count_disagree, ACCEPT);
+                                logRECV("message from [" + msg.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT);
                                 if ( msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
                                     count_agree++;
                                 if ( msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
@@ -351,7 +373,7 @@ public class CustomerAgent extends Agent {
                         myAleat = sendRandomNumber();
                         randomNumberSend = true;
                         repliesCnt++;
-                        logV("[<-][SEND] random number =" + myAleat,count_agree,count_disagree,ACCEPT);
+                        logSEND("random number =" + myAleat, count_agree, count_disagree, ACCEPT);
                     }
 
                     // Collect all proposals (cycle zone)
@@ -362,7 +384,7 @@ public class CustomerAgent extends Agent {
                     if (reply != null) {
                         if (reply.getPerformative() == ACLMessage.INFORM) {
                             //proposal received
-                            logV("[->][RECV] message from ["+reply.getSender().getLocalName()+"]",count_agree, count_disagree, ACCEPT);
+                            logRECV(" message from [" + reply.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT);
                             int getAleat = Integer.parseInt(reply.getContent());
                             //log(" compare" + getAleat + "and " + bestAleat);
                             if ( getAleat > bestAleat) {
@@ -446,7 +468,30 @@ public class CustomerAgent extends Agent {
         SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
         // display time and date using toString()
 
-        System.out.println("[" + ft.format(date) + "]["+a+"|"+b+"|"+c+"]["+LogStatus+"][" + getAID().getLocalName() + "]\t" + log);
+        System.out.println("[" + ft.format(date)
+                +"]["+a+"|"+b+"|"+c+"]["+LogStatus+"]["
+                +color+ getAID().getLocalName() +ANSI_RESET
+                + "]\t" + log);
+    }
+
+    public void logSEND(String log,int a,int b,boolean c) {
+        Date date = new Date();
+        SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
+        // display time and date using toString()
+
+        System.out.println("[" + ft.format(date) + "]["+a+"|"+b+"|"+c+"]["+LogStatus+"]["
+                +color+ getAID().getLocalName() +ANSI_RESET
+                + "]\t" + ANSI_GREEN+"[<-][SEND]"+log+ANSI_RESET);
+    }
+
+    public void logRECV(String log,int a,int b,boolean c) {
+        Date date = new Date();
+        SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
+        // display time and date using toString()
+
+        System.out.println("[" + ft.format(date) +"]["+a+"|"+b+"|"+c+"]["+LogStatus+"]["
+                +color+ getAID().getLocalName() +ANSI_RESET
+                + "]\t" + ANSI_PURPLE+"[->][RECV]"+log+ANSI_RESET);
     }
 
     public  void pauseProg(){
