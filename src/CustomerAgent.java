@@ -200,7 +200,8 @@ public class CustomerAgent extends Agent {
                         //1. if not the leader,
                         if (leader == false && stepWait==false)
                         {
-                            count_agree++; // simule le leader
+                            count_agree++; // simule le choix du leader
+
 
 
                             // a. wait for the leader agent's date for the meeting
