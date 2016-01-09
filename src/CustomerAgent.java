@@ -126,6 +126,7 @@ public class CustomerAgent extends Agent {
         private int numberOfAgent = 0;
         private int count_disagree = 0;
         private int count_agree = 0;
+        private int NUMBER_OF_MEETING=3;
 
         //schedule
         private String day;
@@ -186,7 +187,7 @@ public class CustomerAgent extends Agent {
                     // 4. switch to waitNewProposal
                     step = 2;
                     count_agree++;
-
+                    REFUSE=false;
                     log("[Leader]: -> waitNewProposal");
                     //pauseProg();
                     //setLeader(false);
@@ -197,10 +198,10 @@ public class CustomerAgent extends Agent {
                     //if (stepWait == false)
                     //{
                         //1. if not the leader,
-                        if (leader == false)
+                        if (leader == false && stepWait==false)
                         {
+                            count_agree++; // simule le leader
 
-                            count_agree++; // simulate that the leader agree
 
                             // a. wait for the leader agent's date for the meeting
                             log("[waitNewP]:wait the date of the leader");
@@ -254,6 +255,7 @@ public class CustomerAgent extends Agent {
                         //for everybody: receive the responses
                         //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                         //ACLMessage msg = myAgent.receive(mt);
+                        log("count_agree="+count_agree+" count_disagree="+count_disagree);
                         ACLMessage msg = receive();
                         if (msg != null || (count_agree + count_disagree == meetingAgents.length))
                         {
@@ -268,17 +270,26 @@ public class CustomerAgent extends Agent {
                             {
                                 //we fix the schedule
                                 log("[waitNewP]:Meeting AGREE. END");
+
+                                if(NUMBER_OF_MEETING!=0)
+                                {
+                                    step = 3;
+                                    NUMBER_OF_MEETING--;
+                                }
+                                else
+                                {
+                                    step=4;
+                                }
                                 //cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
                                 //go to step 3 battle to know the next leader
                                 pauseProg();
-                                step = 4;
+
                                 // END OF DEFINE MEETING ? MAYBE WE STOP HERE ?
                             }
-
                             // RECEV ALL MESS BUT DONT AGREE
-                            if (count_agree + count_disagree == meetingAgents.length)
+                            else if (count_agree + count_disagree == meetingAgents.length)
                             {
-                                leader = false;
+
                                 log("TAKE DECISION");
                                 //if he is only one to REFUSE: he is the new leader, go to step 1
                                 if (count_disagree == 1 && REFUSE == true)
@@ -288,19 +299,19 @@ public class CustomerAgent extends Agent {
                                     log("[waitNewP]:Meeting REFUSE : BECOME NEW LEADER");
                                     pauseProg();
                                 }//else some refuse but not the agent, he waits for proposal step2
-                                else
-                                {
-                                    step = 2;
-                                    log("[waitNewP]:Meeting REFUSE : wait new meeting");
-                                    pauseProg();
-                                }
-                                //if multiple and the agent said REFUSE, he goes to battle step 3
-                                if (count_disagree > 1 && REFUSE == true)
+                                else if (count_disagree > 1 && REFUSE == true)
                                 {//
                                     step = 3;
                                     log("[waitNewP]:Meeting REFUSE : GO BATTLE");
                                     pauseProg();
                                 }
+                                else
+                                {
+                                    step = 2;
+                                    log("[waitNewP]:Meeting REFUSED by OTHERS : wait new meeting");
+                                    pauseProg();
+                                }
+                                leader = false;
                                 REFUSE=false;
                                 count_agree=0;
                                 count_disagree=0;
@@ -377,7 +388,7 @@ public class CustomerAgent extends Agent {
 
         public boolean done() {
             //log(" --> DONE step=" + step + " randomNumberSend=" + randomNumberSend);
-            if (step == 4) {
+            if (step == 4 && NUMBER_OF_MEETING==0) {
                 return true;
             } else {
                 return false;
