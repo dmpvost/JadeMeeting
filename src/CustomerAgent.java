@@ -14,6 +14,7 @@ import jade.lang.acl.MessageTemplate;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Scanner;
 
 /**
  * Created by user on 07/01/2016.
@@ -157,11 +158,11 @@ public class CustomerAgent extends Agent {
                     // 1. Become the new leader
                     setLeader(true);
                     log("[Leader]:because LEADER");
-
+                    pauseProg();
                     // 2. Look for the best date to propose a meeting
                     Hour meeting = cal.getBestHour();
                     log("[Leader]:best time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour());
-
+                    pauseProg();
                     // 3. Send this date as CFP
                     //call for proposal (CFP) to found agents
                     ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
@@ -179,11 +180,12 @@ public class CustomerAgent extends Agent {
                     messTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(proposal_date),
                             MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
                     log("[Leader]: send request MEETING");
-
+                    pauseProg();
                     // 4. switch to waitNewProposal
                     step = 2;
 
                     log("[Leader]: -> waitNewProposal");
+                    pauseProg();
                     setLeader(false);
                     break;
 
@@ -194,6 +196,7 @@ public class CustomerAgent extends Agent {
                         if (leader == false) {
                             // a. wait for the leader agent's date for the meeting
                             log("[waitNewP]:wait the date of the leader");
+                            pauseProg();
                             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                             ACLMessage msg = myAgent.receive(mt);
                             if (msg != null) {
@@ -210,6 +213,7 @@ public class CustomerAgent extends Agent {
                                     reply.setContent("true");
                                     count_agree++;
                                     log("[waitNewP]:ACCEPT the date");
+                                    pauseProg();
                                 } else {
                                     //we have to refuse the proposition
                                     reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
@@ -217,6 +221,7 @@ public class CustomerAgent extends Agent {
                                     count_disagree++;
                                     REFUSE = true;
                                     log("[waitNewP]:REFUSE the date");
+                                    pauseProg();
                                 }
                                 stepWait = true;
                                 myAgent.send(reply);
@@ -240,6 +245,7 @@ public class CustomerAgent extends Agent {
                             cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
                             //go to step 3 battle to know the next leader
                             log("[waitNewP]:Meeting agree. END");
+                            pauseProg();
                             step = 4;
                             // END OF DEFINE MEETING ? MAYBE WE STOP HERE ?
                         }//if everybody has responded to the proposal some REFUSE
@@ -249,16 +255,19 @@ public class CustomerAgent extends Agent {
                                 step = 1;
                                 leader = true;
                                 log("[waitNewP]:Meeting REFUSE : NEW LEADER");
+                                pauseProg();
                                 //break;
                             }//else some refuse but not the agent, he waits for proposal step2
                             else {
                                 step = 2;
                                 log("[waitNewP]:Meeting REFUSE : wait new meeting");
+                                pauseProg();
                             }
                             //if multiple and the agent said REFUSE, he goes to battle step 3
                             if (count_disagree > 1 && REFUSE == true) {
                                 step = 3;
                                 log("[waitNewP]:Meeting REFUSE : GO BATTLE");
+                                pauseProg();
                             }
                         }
                         break;
@@ -282,10 +291,8 @@ public class CustomerAgent extends Agent {
                     //ACLMessage reply = myAgent.receive(mt);
                     ACLMessage reply = receive();
                     if (reply != null) {
-                        log("REPLY ENTER ACL=" + reply.getPerformative() + "  ACL.INFORM=" + ACLMessage.INFORM);
                         if (reply.getPerformative() == ACLMessage.INFORM) {
                             //proposal received
-                            log("inside REPLY");
                             int getAleat = Integer.parseInt(reply.getContent());
                             log(" compare" + getAleat + "and " + bestAleat);
                             if ( getAleat > bestAleat) {
@@ -302,11 +309,13 @@ public class CustomerAgent extends Agent {
                             if (myAleat > bestAleat) {
                                 log("[battleLeader]:WIN THE BATTLE with" + myAleat);
                                 step = 1;
+                                pauseProg();
                                 // WIN THE BATTLE -> become leader
                             } else {
                                 step = 2;
                                 log("[battleLeader]:Loose the battle :" + myAleat);
                                 // loose the game go to waitNewProposal
+                                pauseProg();
                             }
 
                             repliesCnt = 0;
@@ -347,10 +356,6 @@ public class CustomerAgent extends Agent {
             message.setPerformative(ACLMessage.INFORM);
             send(message);
 
-            //ACLMessage sendMess = new ACLMessage(ACLMessage.CFP);
-            //sendMess.setPerformative(ACLMessage.PROPOSE);
-            //sendMess.setContent(String.valueOf((aleat)));
-            //myAgent.send(sendMess);
             return aleat;
         }
 
@@ -365,5 +370,8 @@ public class CustomerAgent extends Agent {
         System.out.println("[" + ft.format(date) + "][" + getAID().getLocalName() + "]\t" + log);
     }
 
-
+    public  void pauseProg(){
+        Scanner keyboard = new Scanner(System.in);
+        keyboard.nextLine();
+    }
 }
