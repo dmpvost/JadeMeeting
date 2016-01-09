@@ -34,11 +34,12 @@ public class CustomerAgent extends Agent {
     private boolean done_exec=false;
     //list of found CustomerAgent for meeting
     private AID[] meetingAgents;
+    //private int step=0;
 
     protected void setup() {
 
         leader = false;
-        System.out.println("Agent " + getAID().getLocalName() + " START.");
+        log(" START");
         cal = new Calendar();
 
 
@@ -80,11 +81,24 @@ public class CustomerAgent extends Agent {
                         c.setMaxResults(new Long(-1));
                         AMSAgentDescription[] agents = AMSService.search(myAgent, new AMSAgentDescription(), c);
                         //DFAgentDescription[] result  = DFService.search(myAgent, dfd);
-                        System.out.println(": the following AGENT have been found");
-                        meetingAgents = new AID[agents.length];
-                        for (int i = 0; i < agents.length; ++i) {
-                            meetingAgents[i] = agents[i].getName();
-                            System.out.println(meetingAgents[i].getLocalName());
+                        log(": the following AGENT have been found");
+
+                        // CLEAN THE TABLE OF AGENTS
+                        meetingAgents = new AID[agents.length-3];
+                        int i=0,y=0;
+                        while(i<(agents.length-3))
+                        {
+                        //for (int i = 0; i < agents.length; i++) {
+                            if( (agents[i].getName().equals("ams")) || (agents[i].getName().equals("df")) || (agents[i].getName().equals("rma"))) {
+
+                            }
+                            else
+                            {
+                                meetingAgents[y] = agents[i].getName();
+                                log(meetingAgents[i].getLocalName());
+                                y++;
+                            }
+                            i++;
                         }
                     } catch (FIPAException fe) {
                         fe.printStackTrace();
@@ -143,9 +157,6 @@ public class CustomerAgent extends Agent {
         private boolean randomNumberSend = false;
 
         public void action() {
-
-            // init
-            step = 3;
 
             switch (step) {
 
@@ -323,11 +334,13 @@ public class CustomerAgent extends Agent {
         }
 
         public boolean done() {
-            log(" --> DONE step="+step+" randomNumberSend="+randomNumberSend);
-            if (step==4)
+            log(" --> DONE step=" + step + " randomNumberSend=" + randomNumberSend);
+            if (step==4) {
                 return true;
-            else
+            }
+            else {
                 return false;
+            }
         }
 
 
@@ -341,14 +354,16 @@ public class CustomerAgent extends Agent {
         }
 
 
-        public void log(String log)
-        {
-            Date date = new Date();
-            SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
-            // display time and date using toString()
-            System.out.println("["+ft.format(date)+"]["+getAID().getLocalName()+"] " +log);
-        }
 
+
+    }
+
+    public void log(String log)
+    {
+        Date date = new Date();
+        SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
+        // display time and date using toString()
+        System.out.println("["+ft.format(date)+"]["+getAID().getLocalName()+"] " +log);
     }
 
 
