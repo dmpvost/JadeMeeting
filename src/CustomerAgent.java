@@ -25,6 +25,7 @@ import jade.domain.FIPAAgentManagement.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 public class CustomerAgent extends Agent {
 
@@ -96,7 +97,7 @@ public class CustomerAgent extends Agent {
                         fe.printStackTrace();
                     }
                     //ADD BEHAVIOUR HERE
-                    done_exec=true;
+                    done_exec = true;
                     log("Add behavior");
                     myAgent.addBehaviour(new masterBehavior());
                 }
@@ -140,7 +141,7 @@ public class CustomerAgent extends Agent {
 
         // battle
         private int counter = -1;
-        private int bestAleat = -1;
+        private double bestAleat = -1;
         private int repliesCnt = 0;
         private AID bestAgent;
 
@@ -274,7 +275,7 @@ public class CustomerAgent extends Agent {
                 case 3:
 
 
-                    log("[battleLeader]:Enter in battleLeader randomNumberSend="+randomNumberSend);
+                    log("[battleLeader]:Enter in battleLeader randomNumberSend=" + randomNumberSend);
                     // SendRandom number to other agent
                     if (randomNumberSend == false) {
                         myAleat = sendRandomNumber();
@@ -288,10 +289,10 @@ public class CustomerAgent extends Agent {
                     //ACLMessage reply = myAgent.receive(mt);
                     ACLMessage reply = receive();
                     if (reply != null) {
-                        log("REPLY ENTER ACL="+reply.getPerformative()+ "  ACL.INFORM="+ACLMessage.INFORM);
+                        log("REPLY ENTER ACL=" + reply.getPerformative() + "  ACL.INFORM=" + ACLMessage.INFORM);
                         if (reply.getPerformative() == ACLMessage.INFORM) {
                             //proposal received
-                            int getAleat = Integer.parseInt(reply.getContent());
+                            double getAleat = Integer.parseInt(reply.getContent());
 
                             if (bestAgent == null || getAleat < bestAleat) {
                                 //the best proposal as for now
@@ -341,7 +342,11 @@ public class CustomerAgent extends Agent {
             double aleat = Math.random();
 
             ACLMessage message = new ACLMessage(ACLMessage.CFP);
-            message.addReceiver(new AID("said", AID.ISLOCALNAME));
+            for (int i = 0; i < meetingAgents.length; i++) {
+                if (!Objects.equals(meetingAgents[i].getLocalName(), myAgent.getLocalName())) {
+                    message.addReceiver(meetingAgents[i]);
+                }
+            }
             message.setContent(String.valueOf((aleat)));
             message.setPerformative(ACLMessage.INFORM);
             send(message);
@@ -361,7 +366,7 @@ public class CustomerAgent extends Agent {
         SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
         // display time and date using toString()
 
-        System.out.println("["+ft.format(date)+"]["+getAID().getLocalName()+"]\t"+log);
+        System.out.println("[" + ft.format(date) + "][" + getAID().getLocalName() + "]\t" + log);
     }
 
 
