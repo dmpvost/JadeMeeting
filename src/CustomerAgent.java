@@ -188,7 +188,7 @@ public class CustomerAgent extends Agent {
                     myAgent.send(cfp);
                     //messTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(proposal_date),
                       //      MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
-                    logV("send request MEETING",count_agree,count_disagree,ACCEPT);
+                    logV("[<-][SEND] request MEETING",count_agree,count_disagree,ACCEPT);
                     pauseProg();
                     // 4. switch to waitNewProposal
                     step = 2;
@@ -204,7 +204,7 @@ public class CustomerAgent extends Agent {
                     LogStatus="WAIT";
                     //if (stepWait == false)
                     //{
-                    logV("COUNT1",count_agree,count_disagree,ACCEPT);
+                    //logV("COUNT1",count_agree,count_disagree,ACCEPT);
                         //1. if not the leader,
                         if (leader == false && stepWait==false)
                         {
@@ -225,6 +225,8 @@ public class CustomerAgent extends Agent {
                                 hour = parts[1];
                                 count_agree++; // simule le choix du leader
 
+                                logV("[->][RECV] message from ["+msg.getSender().getLocalName()+"]",count_agree, count_disagree, ACCEPT);
+
                                 double possibility = cal.checkFreeHour(Integer.parseInt(day), Integer.parseInt(hour));
                                 if (possibility != 0)
                                 {
@@ -233,7 +235,7 @@ public class CustomerAgent extends Agent {
                                     reply.setContent("true");
                                     count_agree++;
                                     ACCEPT = true;
-                                    logV("ACCEPT the date",count_agree,count_disagree,ACCEPT);
+                                    logV("[<-][SEND]ACCEPT the date",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }
                                 else
@@ -243,7 +245,7 @@ public class CustomerAgent extends Agent {
                                     reply.setContent("false");
                                     count_disagree++;
                                     ACCEPT = false;
-                                    logV("REFUSE the date",count_agree,count_disagree,ACCEPT);
+                                    logV("[<-][SEND]REFUSE the date",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }
                                 stepWait = true;
@@ -264,17 +266,18 @@ public class CustomerAgent extends Agent {
                         //for everybody: receive the responses
                         //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                         //ACLMessage msg = myAgent.receive(mt);
-                    logV("COUNT2",count_agree,count_disagree,ACCEPT);
+                    //logV("COUNT2",count_agree,count_disagree,ACCEPT);
                         ACLMessage msg = receive();
                         if ( ( msg != null || count_agree + count_disagree == meetingAgents.length))
                         {
-
-                            if (msg != null && msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
-                                count_agree++;
-                            if (msg != null && msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
-                                count_disagree++;
-
-                            logV("COUNT3",count_agree,count_disagree,ACCEPT);
+                            if(msg !=null) {
+                                logV("[->][RECV] message from [" + msg.getSender().getLocalName() + "]",count_agree, count_disagree, ACCEPT);
+                                if ( msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
+                                    count_agree++;
+                                if ( msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
+                                    count_disagree++;
+                            }
+                            //logV("COUNT3",count_agree,count_disagree,ACCEPT);
                             // MEETING FIXED
                             if (count_agree == meetingAgents.length)
                             {
@@ -348,7 +351,7 @@ public class CustomerAgent extends Agent {
                         myAleat = sendRandomNumber();
                         randomNumberSend = true;
                         repliesCnt++;
-                        logV("Send random number =" + myAleat,count_agree,count_disagree,ACCEPT);
+                        logV("[<-][SEND] random number =" + myAleat,count_agree,count_disagree,ACCEPT);
                     }
 
                     // Collect all proposals (cycle zone)
@@ -359,6 +362,7 @@ public class CustomerAgent extends Agent {
                     if (reply != null) {
                         if (reply.getPerformative() == ACLMessage.INFORM) {
                             //proposal received
+                            logV("[->][RECV] message from ["+reply.getSender().getLocalName()+"]",count_agree, count_disagree, ACCEPT);
                             int getAleat = Integer.parseInt(reply.getContent());
                             //log(" compare" + getAleat + "and " + bestAleat);
                             if ( getAleat > bestAleat) {
