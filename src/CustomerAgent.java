@@ -45,8 +45,9 @@ public class CustomerAgent extends Agent {
     public static final String ANSI_WHITE = "\u001B[37m";
 
     private String color;
-    private int NUMBER_OF_MEETING_SAVE = 3;
+    private int NUMBER_OF_MEETING_SAVE = 5;
     private int NUMBER_OF_MEETING = NUMBER_OF_MEETING_SAVE;
+    private int converseID = 1;
 
     protected void setup() {
 
@@ -185,11 +186,12 @@ public class CustomerAgent extends Agent {
                     String proposal_date = meeting.getDay() + "-" + meeting.getHour();
                     cfp.setContent(proposal_date);
                     cfp.setPerformative(ACLMessage.PROPOSE); //???? we need to put this or not ?
-                    cfp.setConversationId("meeting date");
+                    cfp.setConversationId(converseID + ":date");
                     cfp.setReplyWith("cfp" + System.currentTimeMillis()); //unique value
 
                     myAgent.send(cfp);
-                    logSEND("request MEETING", count_agree, count_disagree, ACCEPT);
+                    logSEND("request MEETING", count_agree, count_disagree, ACCEPT, cfp.getConversationId());
+
                     if (clavier == true)
                         pauseProg();
                     // 4. switch to waitNewProposal
@@ -211,8 +213,9 @@ public class CustomerAgent extends Agent {
                         pauseProg();
                         //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                         ACLMessage msg = receive();
-                        if (msg != null && msg.getPerformative() == ACLMessage.PROPOSE) {
+                        if (msg != null && (msg.getPerformative() == ACLMessage.PROPOSE) && (msg.getConversationId().equals(converseID + ":date"))) {
                             String date = msg.getContent();
+                            logRECV("message from [" + msg.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT, msg.getSender().getLocalName(), msg.getConversationId());
 
                             // REPLY TO ALL AGENTS
                             ACLMessage reply = new ACLMessage(ACLMessage.CFP);
@@ -228,8 +231,7 @@ public class CustomerAgent extends Agent {
                             hour = parts[1];
                             count_agree++; // simule le choix du leader
 
-                            logRECV("message from [" + msg.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT, "");
-
+                            reply.setConversationId(converseID + ":date_answer");
                             double possibility = cal.checkFreeHour(Integer.parseInt(day), Integer.parseInt(hour));
                             if (possibility != 0) {
                                 //We can accept the proposition and return true
@@ -237,7 +239,7 @@ public class CustomerAgent extends Agent {
                                 reply.setContent("true");
                                 count_agree++;
                                 ACCEPT = true;
-                                logSEND("ACCEPT the date", count_agree, count_disagree, ACCEPT);
+                                logSEND("ACCEPT the date", count_agree, count_disagree, ACCEPT, reply.getConversationId());
                                 if (clavier == true)
                                     pauseProg();
                             } else {
@@ -246,7 +248,7 @@ public class CustomerAgent extends Agent {
                                 reply.setContent("false");
                                 count_disagree++;
                                 ACCEPT = false;
-                                logSEND("REFUSE the date", count_agree, count_disagree, ACCEPT);
+                                logSEND("REFUSE the date", count_agree, count_disagree, ACCEPT, reply.getConversationId());
                                 if (clavier == true)
                                     pauseProg();
                             }
@@ -259,17 +261,23 @@ public class CustomerAgent extends Agent {
                     }
 
                     ACLMessage msg = receive();
-                    if ((msg != null)) {
-                        logRECV("message from [" + msg.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT, "");
-                        if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
+                    if ((msg != null))
+                    {
+                        logRECV("message from [" + msg.getSender().getLocalName() + "]", count_agree,
+                                count_disagree, ACCEPT, msg.getSender().getLocalName(), msg.getConversationId());
+                        if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL
+                                && msg.getConversationId().equals(converseID + ":date_answer"))
                             count_agree++;
-                        if (msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
+                        if (msg.getPerformative() == ACLMessage.REJECT_PROPOSAL
+                                && msg.getConversationId().equals(converseID + ":date_answer"))
                             count_disagree++;
 
                         // RECEV ALL MESS
-                        if (count_agree + count_disagree == meetingAgents.length) {
+                        if (count_agree + count_disagree == meetingAgents.length)
+                        {
                             logV("TAKE DECISION", count_agree, count_disagree, ACCEPT);
-
+                            // CONVERSATION ID must BE INCREMENT HERE
+                            converseID++;
                             // CASE 1
                             if (count_agree == meetingAgents.length) {
                                 //we fix the schedule
@@ -292,8 +300,9 @@ public class CustomerAgent extends Agent {
                             } else {
                                 step = 2;
                                 // don't participe to the battle, but send message
-                                sendRandomNumber(false);
                                 logV("4.Meeting REFUSED by OTHERS : wait new meeting", count_agree, count_disagree, ACCEPT);
+                                //logSEND(" send empty number=" + myAleat, count_agree, count_disagree, ACCEPT,msg.getConversationId());
+                                sendRandomNumber(false);
                             }
                             leader = false;
                             ACCEPT = false;
@@ -320,16 +329,17 @@ public class CustomerAgent extends Agent {
                         myAleat = sendRandomNumber(true);
                         randomNumberSend = true;
                         repliesCnt++;
-                        logSEND(" random number =" + myAleat, count_agree, count_disagree, ACCEPT);
+
                     }
 
                     // Collect all proposals (cycle zone)
                     //collect proposals
                     ACLMessage reply = receive();
                     if (reply != null) {
-                        if (reply.getPerformative() == ACLMessage.INFORM) {
+                        if (reply.getPerformative() == ACLMessage.INFORM || reply.getConversationId().equals(converseID + ":random")) {
                             //proposal received
-                            logRECV(" message from [" + reply.getSender().getLocalName() + "] =>" + reply.getContent().toString(), count_agree, count_disagree, ACCEPT, reply.getSender().getLocalName());
+                            logRECV(" message from [" + reply.getSender().getLocalName() + "] =>" + reply.getContent().toString(),
+                                    count_agree, count_disagree, ACCEPT, reply.getSender().getLocalName(), reply.getConversationId());
                             int getAleat = Integer.parseInt(reply.getContent());
                             if (getAleat > bestAleat) {
                                 //the best proposal as for now
@@ -401,6 +411,8 @@ public class CustomerAgent extends Agent {
             }
             message.setContent(String.valueOf((aleat)));
             message.setPerformative(ACLMessage.INFORM);
+            message.setConversationId(converseID + ":random");
+            logSEND(" random number =" + aleat, count_agree, count_disagree, ACCEPT, message.getConversationId());
             send(message);
 
             return aleat;
@@ -419,21 +431,12 @@ public class CustomerAgent extends Agent {
         logVV(log, a, b, c, "");
     }
 
-    public void logSEND(String log, int a, int b, boolean c) {
-        logVV(log, a, b, c, ANSI_GREEN + "[<-][SEND]");
+    public void logSEND(String log, int a, int b, boolean c, String id) {
+        logVV(log, a, b, c, ANSI_GREEN + "[<-][SEND]{" + id + "}");
     }
 
-    public void logRECV(String log, int a, int b, boolean c, String owner) {
-
-        String ownercolor = "";
-        if (owner.equals("Arthur"))
-            ownercolor = ANSI_YELLOW;
-        else if (owner.equals("Pierre"))
-            ownercolor = ANSI_CYAN;
-        else
-            ownercolor = ANSI_PURPLE;
-
-        logVV(log, a, b, c, ownercolor + "[->][RECV]");
+    public void logRECV(String log, int a, int b, boolean c, String owner, String id) {
+        logVV(log, a, b, c, getColor(owner) + "[->][RECV]{" + id + "}");
     }
 
     public void logVV(String log, int a, int b, boolean c, String state) {
@@ -466,7 +469,8 @@ public class CustomerAgent extends Agent {
                 + ff + c + ANSI_RESET + "]["
                 + cc + LogStatus + ANSI_RESET + "]["
                 + color + getAID().getLocalName() + ANSI_RESET
-                + "]\t\t" + state + log + ANSI_RESET);
+                + "[" + converseID
+                + "]\t" + state + log + ANSI_RESET);
 
     }
 
@@ -475,5 +479,17 @@ public class CustomerAgent extends Agent {
             Scanner keyboard = new Scanner(System.in);
             keyboard.nextLine();
         }
+    }
+
+    public String getColor(String name) {
+        String ownercolor = "";
+        if (name.equals("Arthur"))
+            ownercolor = ANSI_YELLOW;
+        else if (name.equals("Pierre"))
+            ownercolor = ANSI_CYAN;
+        else
+            ownercolor = ANSI_PURPLE;
+
+        return ownercolor;
     }
 }
