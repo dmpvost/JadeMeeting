@@ -162,6 +162,8 @@ public class CustomerAgent extends Agent {
                     // 2. Look for the best date to propose a meeting
                     Hour meeting = cal.getBestHour();
                     log("[Leader]:best time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour());
+                    day = Integer.toString(meeting.getDay());
+                    hour = Integer.toString(meeting.getHour());
                     pauseProg();
                     // 3. Send this date as CFP
                     //call for proposal (CFP) to found agents
@@ -215,6 +217,7 @@ public class CustomerAgent extends Agent {
                                 String[] parts = date.split("-");
                                 day = parts[0];
                                 hour = parts[1];
+
                                 double possibility = cal.checkFreeHour(Integer.parseInt(day), Integer.parseInt(hour));
                                 if (possibility != 0)
                                 {
@@ -268,7 +271,8 @@ public class CustomerAgent extends Agent {
                             {
                                 //we fix the schedule
                                 log("[waitNewP]:Meeting AGREE. END");
-                                //cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
+                                log(day + " " + hour);
+                                cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
                                 //go to step 3 battle to know the next leader
                                 pauseProg();
                                 step = 4;
