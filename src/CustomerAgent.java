@@ -84,7 +84,7 @@ public class CustomerAgent extends Agent {
                         // CLEAN THE TABLE OF AGENTS
                         meetingAgents = new AID[agents.length - 3];
                         int i = 0, y = 0;
-                        while (i < (agents.length - 3)) {
+                        while (i < (agents.length)) {
                             if (!((agents[i].getName().getLocalName().equals("ams")) || (agents[i].getName().getLocalName().equals("df")) || (agents[i].getName().getLocalName().equals("rma")))) {
                                 meetingAgents[y] = agents[i].getName();
                                 log(meetingAgents[y].getLocalName());
@@ -95,7 +95,6 @@ public class CustomerAgent extends Agent {
                     } catch (FIPAException fe) {
                         fe.printStackTrace();
                     }
-
                     //ADD BEHAVIOUR HERE
                     done_exec=true;
                     log("Add behavior");
