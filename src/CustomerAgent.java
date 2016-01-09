@@ -99,7 +99,8 @@ public class CustomerAgent extends Agent {
                     }
 
                     //ADD BEHAVIOUR HERE
-                    done_exec = true;
+                    done_exec=true;
+                    log("Add behavior");
                     myAgent.addBehaviour(new masterBehavior());
                 }
             }
@@ -155,7 +156,7 @@ public class CustomerAgent extends Agent {
 
                 // INIT -> WHO IS GOING TO BE Leader
                 case 0:
-                    log("\t[INIT]:\tINIT");
+                    log("[INIT]:INIT");
                     // COUNT Number of agent
                     // numberOfAgent=X;
                     step = 3; // go to find the leader.
@@ -165,11 +166,11 @@ public class CustomerAgent extends Agent {
                 case 1:
                     // 1. Become the new leader
                     setLeader(true);
-                    log("\t[Leader]:\tbecause LEADER");
+                    log("[Leader]:because LEADER");
 
                     // 2. Look for the best date to propose a meeting
                     Hour meeting = cal.getBestHour();
-                    log("\t[Leader]:\tbest time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour());
+                    log("[Leader]:best time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour());
 
                     // 3. Send this date as CFP
                     //call for proposal (CFP) to found agents
@@ -187,12 +188,12 @@ public class CustomerAgent extends Agent {
                     myAgent.send(cfp);
                     messTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(proposal_date),
                             MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
-                    log("\t[Leader]\t: send request MEETING");
+                    log("[Leader]: send request MEETING");
 
                     // 4. switch to waitNewProposal
                     step = 2;
 
-                    log("\t[Leader]\t: -> waitNewProposal");
+                    log("[Leader]: -> waitNewProposal");
                     setLeader(false);
                     break;
 
@@ -202,7 +203,7 @@ public class CustomerAgent extends Agent {
                         //1. if not the leader,
                         if (leader == false) {
                             // a. wait for the leader agent's date for the meeting
-                            log("\t[waitNewP]:\twait the date of the leader");
+                            log("[waitNewP]:wait the date of the leader");
                             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                             ACLMessage msg = myAgent.receive(mt);
                             if (msg != null) {
@@ -218,14 +219,14 @@ public class CustomerAgent extends Agent {
                                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                                     reply.setContent("true");
                                     count_agree++;
-                                    log("\t[waitNewP]:\tACCEPT the date");
+                                    log("[waitNewP]:ACCEPT the date");
                                 } else {
                                     //we have to refuse the proposition
                                     reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
                                     reply.setContent("false");
                                     count_disagree++;
                                     REFUSE = true;
-                                    log("\t[waitNewP]:\tREFUSE the date");
+                                    log("[waitNewP]:REFUSE the date");
                                 }
                                 stepWait = true;
                                 myAgent.send(reply);
@@ -248,7 +249,7 @@ public class CustomerAgent extends Agent {
                             //we fix the schedule
                             cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
                             //go to step 3 battle to know the next leader
-                            log("\t[waitNewP]:\tMeeting agree. END");
+                            log("[waitNewP]:Meeting agree. END");
                             step = 4;
                             // END OF DEFINE MEETING ? MAYBE WE STOP HERE ?
                         }//if everybody has responded to the proposal some REFUSE
@@ -257,17 +258,17 @@ public class CustomerAgent extends Agent {
                             if (count_disagree == 1 && REFUSE == true) {
                                 step = 1;
                                 leader = true;
-                                log("\t[waitNewP]:\tMeeting REFUSE : NEW LEADER");
+                                log("[waitNewP]:Meeting REFUSE : NEW LEADER");
                                 //break;
                             }//else some refuse but not the agent, he waits for proposal step2
                             else {
                                 step = 2;
-                                log("\t[waitNewP]:\tMeeting REFUSE : wait new meeting");
+                                log("[waitNewP]:Meeting REFUSE : wait new meeting");
                             }
                             //if multiple and the agent said REFUSE, he goes to battle step 3
                             if (count_disagree > 1 && REFUSE == true) {
                                 step = 3;
-                                log("\t[waitNewP]:\tMeeting REFUSE : GO BATTLE");
+                                log("[waitNewP]:Meeting REFUSE : GO BATTLE");
                             }
                         }
                         break;
@@ -275,12 +276,16 @@ public class CustomerAgent extends Agent {
                     // ---------- battleLeader --------------------
                 case 3:
 
+<<<<<<< HEAD
                     log("\t[battleLeader]:\tEnter in battleLeader randomNumberSend=" + randomNumberSend);
+=======
+                    log("[battleLeader]:Enter in battleLeader randomNumberSend="+randomNumberSend);
+>>>>>>> a2e1a2f72ed9180ab3efaa586f0507c33601d860
                     // SendRandom number to other agent
                     if (randomNumberSend == false) {
                         myAleat = sendRandomNumber();
                         randomNumberSend = true;
-                        log("\t[battleLeader]:\tSend random number =" + myAleat);
+                        log("[battleLeader]:Send random number =" + myAleat);
                     }
 
                     // Collect all proposals (cycle zone)
@@ -302,12 +307,12 @@ public class CustomerAgent extends Agent {
                         if (repliesCnt >= meetingAgents.length) {
                             //all proposals have been received
                             if (myAleat > bestAleat) {
-                                log("\t[battleLeader]:\tWIN THE BATTLE with" + myAleat);
+                                log("[battleLeader]:WIN THE BATTLE with" + myAleat);
                                 step = 1;
                                 // WIN THE BATTLE -> become leader
                             } else {
                                 step = 2;
-                                log("\t[battleLeader]:\tLoose the battle :" + myAleat);
+                                log("[battleLeader]:Loose the battle :" + myAleat);
                                 // loose the game go to waitNewProposal
                             }
 
@@ -320,7 +325,7 @@ public class CustomerAgent extends Agent {
                     }
                     break;
                 case 4:
-                    log("\t[END]:\tEND");
+                    log("[END]:END");
                     break;
 
             }
@@ -352,7 +357,8 @@ public class CustomerAgent extends Agent {
         Date date = new Date();
         SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
         // display time and date using toString()
-        System.out.println("[" + ft.format(date) + "][" + getAID().getLocalName() + "] " + log);
+
+        System.out.println("["+ft.format(date)+"]["+getAID().getLocalName()+"]\t"+log);
     }
 
 
