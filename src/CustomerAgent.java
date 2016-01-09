@@ -53,7 +53,7 @@ public class CustomerAgent extends Agent {
 
         if(this.getLocalName().equals("Arthur"))
         {
-            color=ANSI_BLUE;
+            color=ANSI_YELLOW;
         }
         else
         {
@@ -319,6 +319,7 @@ public class CustomerAgent extends Agent {
                                 pauseProg();
                                 leader = false;
                                 ACCEPT=false;
+                                stepWait=false;
                                 count_agree=0;
                                 count_disagree=0;
 
@@ -353,6 +354,7 @@ public class CustomerAgent extends Agent {
                                 ACCEPT=false;
                                 count_agree=0;
                                 count_disagree=0;
+                                stepWait=false;
 
                             }
                         }
