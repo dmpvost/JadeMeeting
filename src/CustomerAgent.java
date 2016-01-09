@@ -31,7 +31,7 @@ public class CustomerAgent extends Agent {
     private boolean leader;
     private Calendar cal;
     private boolean REFUSE = false;
-    private boolean done_exec=false;
+    private boolean done_exec = false;
     //list of found CustomerAgent for meeting
     private AID[] meetingAgents;
     //private int step=0;
@@ -66,8 +66,7 @@ public class CustomerAgent extends Agent {
         int interval = 20000;
         Object[] args = getArguments();
         if (args != null && args.length > 0) interval = Integer.parseInt(args[0].toString());
-        addBehaviour(new TickerBehaviour(this, interval)
-        {
+        addBehaviour(new TickerBehaviour(this, interval) {
             protected void onTick() {
                 if (done_exec == false) {
                     // DFAgentDescription
@@ -80,20 +79,15 @@ public class CustomerAgent extends Agent {
                         SearchConstraints c = new SearchConstraints();
                         c.setMaxResults(new Long(-1));
                         AMSAgentDescription[] agents = AMSService.search(myAgent, new AMSAgentDescription(), c);
-                        //DFAgentDescription[] result  = DFService.search(myAgent, dfd);
                         log(": the following AGENT have been found");
 
                         // CLEAN THE TABLE OF AGENTS
-                        meetingAgents = new AID[agents.length-3];
-                        int i=0,y=0;
-                        while(i<(agents.length-3))
-                        {
-                        //for (int i = 0; i < agents.length; i++) {
-                            if( (agents[i].getName().equals("ams")) || (agents[i].getName().equals("df")) || (agents[i].getName().equals("rma"))) {
+                        meetingAgents = new AID[agents.length - 3];
+                        int i = 0, y = 0;
+                        while (i < (agents.length - 3)) {
+                            log(agents[i].getName().getLocalName().toString());
 
-                            }
-                            else
-                            {
+                            if (!(agents[i].getName().getLocalName().equals("ams")) || (agents[i].getName().getLocalName().equals("df")) || (agents[i].getName().getLocalName().equals("rma"))) {
                                 meetingAgents[y] = agents[i].getName();
                                 log(meetingAgents[i].getLocalName());
                                 y++;
@@ -105,13 +99,12 @@ public class CustomerAgent extends Agent {
                     }
 
                     //ADD BEHAVIOUR HERE
-                    done_exec=true;
+                    done_exec = true;
                     myAgent.addBehaviour(new masterBehavior());
                 }
             }
 
         });
-
 
 
     }
@@ -282,7 +275,7 @@ public class CustomerAgent extends Agent {
                     // ---------- battleLeader --------------------
                 case 3:
 
-                    log("\t[battleLeader]:\tEnter in battleLeader randomNumberSend="+randomNumberSend);
+                    log("\t[battleLeader]:\tEnter in battleLeader randomNumberSend=" + randomNumberSend);
                     // SendRandom number to other agent
                     if (randomNumberSend == false) {
                         myAleat = sendRandomNumber();
@@ -335,10 +328,9 @@ public class CustomerAgent extends Agent {
 
         public boolean done() {
             log(" --> DONE step=" + step + " randomNumberSend=" + randomNumberSend);
-            if (step==4) {
+            if (step == 4) {
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         }
@@ -354,16 +346,13 @@ public class CustomerAgent extends Agent {
         }
 
 
-
-
     }
 
-    public void log(String log)
-    {
+    public void log(String log) {
         Date date = new Date();
         SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
         // display time and date using toString()
-        System.out.println("["+ft.format(date)+"]["+getAID().getLocalName()+"] " +log);
+        System.out.println("[" + ft.format(date) + "][" + getAID().getLocalName() + "] " + log);
     }
 
 
