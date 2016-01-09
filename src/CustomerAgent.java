@@ -26,6 +26,7 @@ public class CustomerAgent extends Agent {
     private Calendar cal;
     private boolean ACCEPT = false;
     private boolean done_exec = false;
+    private String LogStatus="";
     //list of found CustomerAgent for meeting
     private AID[] meetingAgents;
     //private int step=0;
@@ -148,7 +149,8 @@ public class CustomerAgent extends Agent {
 
                 // INIT -> WHO IS GOING TO BE Leader
                 case 0:
-                    log("[INIT]:INIT");
+                    LogStatus="INIT";
+                    logV("INIT",count_agree,count_disagree,ACCEPT);
                     // COUNT Number of agent
                     // numberOfAgent=X;
                     step = 3; // go to find the leader.
@@ -156,14 +158,15 @@ public class CustomerAgent extends Agent {
 
                 // ---------- Leader --------------------
                 case 1:
+                    LogStatus="LEAD";
                     // 1. Become the new leader
                     setLeader(true);
                     leader=true;
-                    log("[Leader]:become LEADER");
+                    logV("become LEADER",count_agree,count_disagree,ACCEPT);
                     pauseProg();
                     // 2. Look for the best date to propose a meeting
                     Hour meeting = cal.getBestHour();
-                    logV("[Leader]:best time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour(),count_agree,count_disagree,ACCEPT);
+                    logV("best time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour(),count_agree,count_disagree,ACCEPT);
                     day = Integer.toString(meeting.getDay());
                     hour = Integer.toString(meeting.getHour());
                     pauseProg();
@@ -185,19 +188,20 @@ public class CustomerAgent extends Agent {
                     myAgent.send(cfp);
                     //messTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(proposal_date),
                       //      MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
-                    log("[Leader]: send request MEETING");
+                    logV("send request MEETING",count_agree,count_disagree,ACCEPT);
                     pauseProg();
                     // 4. switch to waitNewProposal
                     step = 2;
                     count_agree++;
                     ACCEPT=true;
-                    logV("[Leader]: -> waitNewProposal",count_agree,count_disagree,ACCEPT);
+                    logV(" -> waitNewProposal",count_agree,count_disagree,ACCEPT);
                     //pauseProg();
                     //setLeader(false);
                     break;
 
                 // ---------- waitNewProposal --------------------
                 case 2:
+                    LogStatus="WAIT";
                     //if (stepWait == false)
                     //{
                     logV("COUNT1",count_agree,count_disagree,ACCEPT);
@@ -207,7 +211,7 @@ public class CustomerAgent extends Agent {
 
 
                             // a. wait for the leader agent's date for the meeting
-                            logV("[waitNewP]:wait the date of the leader",count_agree,count_disagree,ACCEPT);
+                            logV("wait the date of the leader",count_agree,count_disagree,ACCEPT);
                             pauseProg();
                             //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                             ACLMessage msg = receive();
@@ -229,7 +233,7 @@ public class CustomerAgent extends Agent {
                                     reply.setContent("true");
                                     count_agree++;
                                     ACCEPT = true;
-                                    logV("[waitNewP]:ACCEPT the date",count_agree,count_disagree,ACCEPT);
+                                    logV("ACCEPT the date",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }
                                 else
@@ -239,7 +243,7 @@ public class CustomerAgent extends Agent {
                                     reply.setContent("false");
                                     count_disagree++;
                                     ACCEPT = false;
-                                    logV("[waitNewP]:REFUSE the date",count_agree,count_disagree,ACCEPT);
+                                    logV("REFUSE the date",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }
                                 stepWait = true;
@@ -274,7 +278,7 @@ public class CustomerAgent extends Agent {
                             if (count_agree == meetingAgents.length)
                             {
                                 //we fix the schedule
-                                logV("[waitNewP]:Meeting AGREE. END", count_agree, count_disagree, ACCEPT);
+                                logV("Meeting AGREE. END", count_agree, count_disagree, ACCEPT);
                                 if(NUMBER_OF_MEETING!=0)
                                 {
                                     step = 3;
@@ -300,19 +304,19 @@ public class CustomerAgent extends Agent {
                                 {
                                     step = 1;
                                     leader = true;
-                                    logV("[waitNewP]:Meeting REFUSE : BECOME NEW LEADER",count_agree,count_disagree,ACCEPT);
+                                    logV("Meeting REFUSE : BECOME NEW LEADER",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }//else some refuse but not the agent, he waits for proposal step2
                                 else if (count_disagree > 1 && ACCEPT == false)
                                 {//
                                     step = 3;
-                                    logV("[waitNewP]:Meeting REFUSE : GO BATTLE",count_agree,count_disagree,ACCEPT);
+                                    logV("Meeting REFUSE : GO BATTLE",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }
                                 else
                                 {
                                     step = 2;
-                                    logV("[waitNewP]:Meeting REFUSED by OTHERS : wait new meeting",count_agree,count_disagree,ACCEPT);
+                                    logV("Meeting REFUSED by OTHERS : wait new meeting",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }
                                 leader = false;
@@ -331,15 +335,15 @@ public class CustomerAgent extends Agent {
 
                     // ---------- battleLeader --------------------
                 case 3:
+                    LogStatus="BATL";
 
-
-                    log("[battleLeader]:Enter in battleLeader randomNumberSend=" + randomNumberSend);
+                    logV("Enter in battleLeader randomNumberSend=" + randomNumberSend,count_agree,count_disagree,ACCEPT);
                     // SendRandom number to other agent
                     if (randomNumberSend == false) {
                         myAleat = sendRandomNumber();
                         randomNumberSend = true;
                         repliesCnt++;
-                        log("[battleLeader]:Send random number =" + myAleat);
+                        logV("Send random number =" + myAleat,count_agree,count_disagree,ACCEPT);
                     }
 
                     // Collect all proposals (cycle zone)
@@ -356,7 +360,7 @@ public class CustomerAgent extends Agent {
                                 //the best proposal as for now
                                 bestAleat = getAleat;
                                 bestAgent = reply.getSender();
-                                log("bestAleat found = "+bestAleat);
+                                logV("bestAleat found = " + bestAleat,count_agree,count_disagree,ACCEPT);
                             }
                         }
                         repliesCnt++;
@@ -364,13 +368,13 @@ public class CustomerAgent extends Agent {
                         if (repliesCnt >= meetingAgents.length) {
                             //all proposals have been received
                             if (myAleat > bestAleat) {
-                                log("[battleLeader]:WIN THE BATTLE with" + myAleat);
+                                logV("WIN THE BATTLE with" + myAleat,count_agree,count_disagree,ACCEPT);
                                 step = 1;
                                 pauseProg();
                                 // WIN THE BATTLE -> become leader
                             } else {
                                 step = 2;
-                                log("[battleLeader]:Loose the battle :" + myAleat);
+                                logV("Loose the battle :" + myAleat,count_agree,count_disagree,ACCEPT);
                                 // loose the game go to waitNewProposal
                                 pauseProg();
                             }
@@ -384,7 +388,8 @@ public class CustomerAgent extends Agent {
                     }
                     break;
                 case 4:
-                    log("[END]:END");
+                    LogStatus="E";
+                    logV("END",count_agree,count_disagree,ACCEPT);
                     break;
 
             }
@@ -432,7 +437,7 @@ public class CustomerAgent extends Agent {
         SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
         // display time and date using toString()
 
-        System.out.println("[" + ft.format(date) + "][" + getAID().getLocalName() + "]["+a+"|"+b+"|"+c+"]\t" + log);
+        System.out.println("[" + ft.format(date) + "]["+a+"|"+b+"|"+c+"]["+LogStatus+"][" + getAID().getLocalName() + "]\t" + log);
     }
 
     public  void pauseProg(){
