@@ -15,6 +15,7 @@ import jade.lang.acl.MessageTemplate;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by user on 07/01/2016.
@@ -31,6 +32,8 @@ public class CustomerAgent extends Agent {
     private AID[] meetingAgents;
     //private int step=0;
 
+    public boolean clavier = false;
+
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -42,6 +45,8 @@ public class CustomerAgent extends Agent {
     public static final String ANSI_WHITE = "\u001B[37m";
 
     private String color;
+    private int NUMBER_OF_MEETING_SAVE = 3;
+    private int NUMBER_OF_MEETING = NUMBER_OF_MEETING_SAVE;
 
     protected void setup() {
 
@@ -51,7 +56,7 @@ public class CustomerAgent extends Agent {
 
         if (this.getLocalName().equals("Arthur"))
             color = ANSI_YELLOW;
-        else if(this.getLocalName().equals("Pierre"))
+        else if (this.getLocalName().equals("Pierre"))
             color = ANSI_CYAN;
         else
             color = ANSI_PURPLE;
@@ -124,7 +129,7 @@ public class CustomerAgent extends Agent {
         private int numberOfAgent = 0;
         private int count_disagree = 0;
         private int count_agree = 0;
-        private int NUMBER_OF_MEETING = 3;
+
 
         //schedule
         private String day;
@@ -144,6 +149,7 @@ public class CustomerAgent extends Agent {
 
             switch (step) {
 
+
                 // INIT -> WHO IS GOING TO BE Leader
                 case 0:
                     LogStatus = "INIT";
@@ -158,13 +164,15 @@ public class CustomerAgent extends Agent {
                     setLeader(true);
                     leader = true;
                     logV("become LEADER", count_agree, count_disagree, ACCEPT);
-                    pauseProg();
+                    if (clavier == true)
+                        pauseProg();
                     // 2. Look for the best date to propose a meeting
                     Hour meeting = cal.getBestHour();
                     logV("best time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour(), count_agree, count_disagree, ACCEPT);
                     day = Integer.toString(meeting.getDay());
                     hour = Integer.toString(meeting.getHour());
-                    pauseProg();
+                    if (clavier == true)
+                        pauseProg();
                     // 3. Send this date as CFP
                     //call for proposal (CFP) to found agents
                     ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
@@ -182,7 +190,8 @@ public class CustomerAgent extends Agent {
 
                     myAgent.send(cfp);
                     logSEND("request MEETING", count_agree, count_disagree, ACCEPT);
-                    pauseProg();
+                    if (clavier == true)
+                        pauseProg();
                     // 4. switch to waitNewProposal
                     step = 2;
                     count_agree++;
@@ -198,6 +207,7 @@ public class CustomerAgent extends Agent {
 
                         // a. wait for the leader agent's date for the meeting
                         logV("wait the date of the leader", count_agree, count_disagree, ACCEPT);
+
                         pauseProg();
                         //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                         ACLMessage msg = receive();
@@ -218,8 +228,7 @@ public class CustomerAgent extends Agent {
                             hour = parts[1];
                             count_agree++; // simule le choix du leader
 
-                            //logRECV("message from [" + msg.getSender().getLocalName() + "]=>"+reply.getContent().toString(), count_agree, count_disagree, ACCEPT,reply.getSender().getLocalName());
-                            logRECV("message from [" + msg.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT,"");
+                            logRECV("message from [" + msg.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT, "");
 
                             double possibility = cal.checkFreeHour(Integer.parseInt(day), Integer.parseInt(hour));
                             if (possibility != 0) {
@@ -229,7 +238,8 @@ public class CustomerAgent extends Agent {
                                 count_agree++;
                                 ACCEPT = true;
                                 logSEND("ACCEPT the date", count_agree, count_disagree, ACCEPT);
-                                pauseProg();
+                                if (clavier == true)
+                                    pauseProg();
                             } else {
                                 //we have to refuse the proposition
                                 reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
@@ -237,7 +247,8 @@ public class CustomerAgent extends Agent {
                                 count_disagree++;
                                 ACCEPT = false;
                                 logSEND("REFUSE the date", count_agree, count_disagree, ACCEPT);
-                                pauseProg();
+                                if (clavier == true)
+                                    pauseProg();
                             }
                             stepWait = true;
                             myAgent.send(reply);
@@ -248,17 +259,15 @@ public class CustomerAgent extends Agent {
                     }
 
                     ACLMessage msg = receive();
-                    if ((msg != null))
-                    {
-                        logRECV("message from [" + msg.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT,"");
+                    if ((msg != null)) {
+                        logRECV("message from [" + msg.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT, "");
                         if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
                             count_agree++;
                         if (msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
                             count_disagree++;
 
                         // RECEV ALL MESS
-                        if (count_agree + count_disagree == meetingAgents.length)
-                        {
+                        if (count_agree + count_disagree == meetingAgents.length) {
                             logV("TAKE DECISION", count_agree, count_disagree, ACCEPT);
 
                             // CASE 1
@@ -282,6 +291,8 @@ public class CustomerAgent extends Agent {
                                 logV("3.Meeting REFUSE : GO BATTLE", count_agree, count_disagree, ACCEPT);
                             } else {
                                 step = 2;
+                                // don't participe to the battle, but send message
+                                sendRandomNumber(false);
                                 logV("4.Meeting REFUSED by OTHERS : wait new meeting", count_agree, count_disagree, ACCEPT);
                             }
                             leader = false;
@@ -289,7 +300,8 @@ public class CustomerAgent extends Agent {
                             count_agree = 0;
                             count_disagree = 0;
                             stepWait = false;
-                            pauseProg();
+                            if (clavier == true)
+                                pauseProg();
 
                         }
                     } else {
@@ -305,7 +317,7 @@ public class CustomerAgent extends Agent {
                     //logV("Enter in battleLeader randomNumberSend=" + randomNumberSend, count_agree, count_disagree, ACCEPT);
                     // SendRandom number to other agent
                     if (randomNumberSend == false) {
-                        myAleat = sendRandomNumber();
+                        myAleat = sendRandomNumber(true);
                         randomNumberSend = true;
                         repliesCnt++;
                         logSEND(" random number =" + myAleat, count_agree, count_disagree, ACCEPT);
@@ -317,7 +329,7 @@ public class CustomerAgent extends Agent {
                     if (reply != null) {
                         if (reply.getPerformative() == ACLMessage.INFORM) {
                             //proposal received
-                            logRECV(" message from [" + reply.getSender().getLocalName() + "] =>"+reply.getContent().toString(), count_agree, count_disagree, ACCEPT,reply.getSender().getLocalName());
+                            logRECV(" message from [" + reply.getSender().getLocalName() + "] =>" + reply.getContent().toString(), count_agree, count_disagree, ACCEPT, reply.getSender().getLocalName());
                             int getAleat = Integer.parseInt(reply.getContent());
                             if (getAleat > bestAleat) {
                                 //the best proposal as for now
@@ -332,17 +344,19 @@ public class CustomerAgent extends Agent {
                             if (myAleat > bestAleat) {
                                 logV("WIN THE BATTLE with " + myAleat, count_agree, count_disagree, ACCEPT);
                                 step = 1;
-                                pauseProg();
+                                if (clavier == true)
+                                    pauseProg();
                                 // WIN THE BATTLE -> become leader
                             } else {
                                 step = 2;
-                                logV("LOOSE the battle :" + myAleat+ " - best="+bestAleat, count_agree, count_disagree, ACCEPT);
+                                logV("LOOSE the battle :" + myAleat + " - best=" + bestAleat, count_agree, count_disagree, ACCEPT);
                                 // loose the game go to waitNewProposal
-                                pauseProg();
+                                if (clavier == true)
+                                    pauseProg();
                             }
 
-                            bestAleat=0;
-                            myAleat=0;
+                            bestAleat = 0;
+                            myAleat = 0;
                             repliesCnt = 0;
                             randomNumberSend = false;
                         }
@@ -354,6 +368,8 @@ public class CustomerAgent extends Agent {
                 case 4:
                     LogStatus = "E";
                     logV("END", count_agree, count_disagree, ACCEPT);
+                    Scanner keyboard = new Scanner(System.in);
+                    keyboard.nextLine();
                     break;
 
             }
@@ -368,8 +384,14 @@ public class CustomerAgent extends Agent {
         }
 
 
-        public double sendRandomNumber() {
-            int aleat = (int) (Math.random() * 10000);
+        public double sendRandomNumber(boolean play) {
+
+            int aleat;
+            if (play == true) {
+                aleat = (int) (Math.random() * 10000);
+            } else {
+                aleat = 0;
+            }
 
             ACLMessage message = new ACLMessage(ACLMessage.CFP);
             for (int i = 0; i < meetingAgents.length; i++) {
@@ -398,50 +420,60 @@ public class CustomerAgent extends Agent {
     }
 
     public void logSEND(String log, int a, int b, boolean c) {
-        logVV(log,a,b,c,ANSI_GREEN+"[<-][SEND]");
+        logVV(log, a, b, c, ANSI_GREEN + "[<-][SEND]");
     }
 
-    public void logRECV(String log, int a, int b, boolean c,String owner) {
+    public void logRECV(String log, int a, int b, boolean c, String owner) {
 
-        String ownercolor="";
+        String ownercolor = "";
         if (owner.equals("Arthur"))
             ownercolor = ANSI_YELLOW;
-        else if(owner.equals("Pierre"))
+        else if (owner.equals("Pierre"))
             ownercolor = ANSI_CYAN;
         else
             ownercolor = ANSI_PURPLE;
 
-        logVV(log,a,b,c,ownercolor+"[->][RECV]");
+        logVV(log, a, b, c, ownercolor + "[->][RECV]");
     }
 
-    public void logVV(String log, int a, int b, boolean c,String state) {
+    public void logVV(String log, int a, int b, boolean c, String state) {
+
+        try {
+            TimeUnit.MILLISECONDS.sleep(80);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         Date date = new Date();
         SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
 
-        String cc="";
-        if(LogStatus.equals("BATL"))
-            cc=ANSI_RED;
-        else if(LogStatus.equals("LEAD"))
-            cc=ANSI_GREEN;
+        String cc = "";
+        if (LogStatus.equals("BATL"))
+            cc = ANSI_RED;
+        else if (LogStatus.equals("LEAD"))
+            cc = ANSI_GREEN;
 
-        String ff="";
-        if(c==true)
-            ff=ANSI_GREEN;
+        String ff = "";
+        if (c == true)
+            ff = ANSI_GREEN;
         else
-            ff=ANSI_RED;
+            ff = ANSI_RED;
 
-        System.out.println("[" + ft.format(date) + "]["
-                + ANSI_GREEN+   a+  ANSI_RESET + "|"
-                + ANSI_RED+     b+  ANSI_RESET + "|"
-                + ff+           c+  ANSI_RESET+ "]["
-                + cc + LogStatus +  ANSI_RESET+ "]["
+        System.out.println("[" + ft.format(date) + "]"
+                + "[" + NUMBER_OF_MEETING + "/" + NUMBER_OF_MEETING_SAVE + "]"
+                + ANSI_GREEN + a + ANSI_RESET + "|"
+                + ANSI_RED + b + ANSI_RESET + "|"
+                + ff + c + ANSI_RESET + "]["
+                + cc + LogStatus + ANSI_RESET + "]["
                 + color + getAID().getLocalName() + ANSI_RESET
-                + "]\t" + state + log + ANSI_RESET);
+                + "]\t\t" + state + log + ANSI_RESET);
 
     }
 
     public void pauseProg() {
-        Scanner keyboard = new Scanner(System.in);
-        keyboard.nextLine();
+        if (clavier == true) {
+            Scanner keyboard = new Scanner(System.in);
+            keyboard.nextLine();
+        }
     }
 }
