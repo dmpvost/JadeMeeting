@@ -293,7 +293,7 @@ public class CustomerAgent extends Agent {
                                 }
                                 //if multiple and the agent said REFUSE, he goes to battle step 3
                                 if (count_disagree > 1 && REFUSE == true)
-                                {
+                                {//
                                     step = 3;
                                     log("[waitNewP]:Meeting REFUSE : GO BATTLE");
                                     pauseProg();
