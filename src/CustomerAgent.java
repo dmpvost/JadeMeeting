@@ -141,7 +141,7 @@ public class CustomerAgent extends Agent {
 
         // battle
         private int counter = -1;
-        private double bestAleat = -1;
+        private int bestAleat = -1;
         private int repliesCnt = 0;
         private AID bestAgent;
 
@@ -292,8 +292,9 @@ public class CustomerAgent extends Agent {
                         log("REPLY ENTER ACL=" + reply.getPerformative() + "  ACL.INFORM=" + ACLMessage.INFORM);
                         if (reply.getPerformative() == ACLMessage.INFORM) {
                             //proposal received
-                            double getAleat = Integer.parseInt(reply.getContent());
-
+                            log("inside REPLY");
+                            int getAleat = Integer.parseInt(reply.getContent());
+                            log(bestAgent.toString() + " compare" + getAleat + "and " + bestAleat);
                             if (bestAgent == null || getAleat < bestAleat) {
                                 //the best proposal as for now
                                 bestAleat = getAleat;
@@ -339,7 +340,7 @@ public class CustomerAgent extends Agent {
 
 
         public double sendRandomNumber() {
-            double aleat = Math.random();
+            int aleat = (int) (Math.random() * 10000);
 
             ACLMessage message = new ACLMessage(ACLMessage.CFP);
             for (int i = 0; i < meetingAgents.length; i++) {
