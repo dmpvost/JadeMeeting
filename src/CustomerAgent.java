@@ -24,7 +24,7 @@ public class CustomerAgent extends Agent {
 
     private boolean leader;
     private Calendar cal;
-    private boolean REFUSE = false;
+    private boolean ACCEPT = false;
     private boolean done_exec = false;
     //list of found CustomerAgent for meeting
     private AID[] meetingAgents;
@@ -163,7 +163,7 @@ public class CustomerAgent extends Agent {
                     pauseProg();
                     // 2. Look for the best date to propose a meeting
                     Hour meeting = cal.getBestHour();
-                    logV("[Leader]:best time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour(),count_agree,count_disagree,REFUSE);
+                    logV("[Leader]:best time for meeting is day:" + meeting.getDay() + " at " + meeting.getHour(),count_agree,count_disagree,ACCEPT);
                     day = Integer.toString(meeting.getDay());
                     hour = Integer.toString(meeting.getHour());
                     pauseProg();
@@ -190,8 +190,8 @@ public class CustomerAgent extends Agent {
                     // 4. switch to waitNewProposal
                     step = 2;
                     count_agree++;
-                    REFUSE=false;
-                    logV("[Leader]: -> waitNewProposal",count_agree,count_disagree,REFUSE);
+                    ACCEPT=true;
+                    logV("[Leader]: -> waitNewProposal",count_agree,count_disagree,ACCEPT);
                     //pauseProg();
                     //setLeader(false);
                     break;
@@ -200,14 +200,14 @@ public class CustomerAgent extends Agent {
                 case 2:
                     //if (stepWait == false)
                     //{
-                    logV("COUNT1",count_agree,count_disagree,REFUSE);
+                    logV("COUNT1",count_agree,count_disagree,ACCEPT);
                         //1. if not the leader,
                         if (leader == false && stepWait==false)
                         {
 
 
                             // a. wait for the leader agent's date for the meeting
-                            logV("[waitNewP]:wait the date of the leader",count_agree,count_disagree,REFUSE);
+                            logV("[waitNewP]:wait the date of the leader",count_agree,count_disagree,ACCEPT);
                             pauseProg();
                             //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                             ACLMessage msg = receive();
@@ -228,8 +228,8 @@ public class CustomerAgent extends Agent {
                                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                                     reply.setContent("true");
                                     count_agree++;
-                                    REFUSE = false;
-                                    logV("[waitNewP]:ACCEPT the date",count_agree,count_disagree,REFUSE);
+                                    ACCEPT = true;
+                                    logV("[waitNewP]:ACCEPT the date",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }
                                 else
@@ -238,8 +238,8 @@ public class CustomerAgent extends Agent {
                                     reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
                                     reply.setContent("false");
                                     count_disagree++;
-                                    REFUSE = true;
-                                    logV("[waitNewP]:REFUSE the date",count_agree,count_disagree,REFUSE);
+                                    ACCEPT = false;
+                                    logV("[waitNewP]:REFUSE the date",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }
                                 stepWait = true;
@@ -260,7 +260,7 @@ public class CustomerAgent extends Agent {
                         //for everybody: receive the responses
                         //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                         //ACLMessage msg = myAgent.receive(mt);
-                    logV("COUNT2",count_agree,count_disagree,REFUSE);
+                    logV("COUNT2",count_agree,count_disagree,ACCEPT);
                         ACLMessage msg = receive();
                         if (msg != null || (count_agree + count_disagree == meetingAgents.length))
                         {
@@ -269,12 +269,12 @@ public class CustomerAgent extends Agent {
                                 count_agree++;
                             if (msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
                                 count_disagree++;
-                            logV("COUNT3",count_agree,count_disagree,REFUSE);
+                            logV("COUNT3",count_agree,count_disagree,ACCEPT);
                             // MEETING FIXED
                             if (count_agree == meetingAgents.length)
                             {
                                 //we fix the schedule
-                                logV("[waitNewP]:Meeting AGREE. END", count_agree, count_disagree, REFUSE);
+                                logV("[waitNewP]:Meeting AGREE. END", count_agree, count_disagree, ACCEPT);
                                 if(NUMBER_OF_MEETING!=0)
                                 {
                                     step = 3;
@@ -294,29 +294,29 @@ public class CustomerAgent extends Agent {
                             else if (count_agree + count_disagree == meetingAgents.length)
                             {
 
-                                logV("TAKE DECISION",count_agree,count_disagree,REFUSE);
+                                logV("TAKE DECISION",count_agree,count_disagree,ACCEPT);
                                 //if he is only one to REFUSE: he is the new leader, go to step 1
-                                if (count_disagree == 1 && REFUSE == true)
+                                if (count_disagree == 1 && ACCEPT == false)
                                 {
                                     step = 1;
                                     leader = true;
-                                    logV("[waitNewP]:Meeting REFUSE : BECOME NEW LEADER",count_agree,count_disagree,REFUSE);
+                                    logV("[waitNewP]:Meeting REFUSE : BECOME NEW LEADER",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }//else some refuse but not the agent, he waits for proposal step2
-                                else if (count_disagree > 1 && REFUSE == true)
+                                else if (count_disagree > 1 && ACCEPT == false)
                                 {//
                                     step = 3;
-                                    logV("[waitNewP]:Meeting REFUSE : GO BATTLE",count_agree,count_disagree,REFUSE);
+                                    logV("[waitNewP]:Meeting REFUSE : GO BATTLE",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }
                                 else
                                 {
                                     step = 2;
-                                    logV("[waitNewP]:Meeting REFUSED by OTHERS : wait new meeting",count_agree,count_disagree,REFUSE);
+                                    logV("[waitNewP]:Meeting REFUSED by OTHERS : wait new meeting",count_agree,count_disagree,ACCEPT);
                                     pauseProg();
                                 }
                                 leader = false;
-                                REFUSE=false;
+                                ACCEPT=false;
                                 count_agree=0;
                                 count_disagree=0;
 
