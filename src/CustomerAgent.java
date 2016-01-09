@@ -49,34 +49,10 @@ public class CustomerAgent extends Agent {
         log(" START");
         cal = new Calendar();
 
-
-
         if(this.getLocalName().equals("Arthur"))
-        {
             color=ANSI_YELLOW;
-        }
         else
-        {
             color=ANSI_CYAN;
-        }
-
-        // ----------- NOT DELETE ---------------------------------
-        // ADD ALL AGENTS IN TABLE meetingAgents
-        /*AMSAgentDescription [] agents = null;
-        try {
-            SearchConstraints c = new SearchConstraints();
-            c.setMaxResults ( new Long(-1) );
-            agents = AMSService.search( this, new AMSAgentDescription (), c );
-        }
-        catch (FIPAException fe) {
-            fe.printStackTrace();
-        }
-        for (int i=0; i<agents.length;i++){
-            AID meetingAgents = agents[i].getName();
-            System.out.println("==>"+meetingAgents.getLocalName());
-        }*/
-        //---------------------------------------------------------
-
 
         //time interval for buyer for sending subsequent CFP
         //as a CLI argument
@@ -96,7 +72,6 @@ public class CustomerAgent extends Agent {
                         SearchConstraints c = new SearchConstraints();
                         c.setMaxResults(new Long(-1));
                         AMSAgentDescription[] agents = AMSService.search(myAgent, new AMSAgentDescription(), c);
-                        //log(": the following AGENT have been found");
 
                         // CLEAN THE TABLE OF AGENTS
                         meetingAgents = new AID[agents.length - 3];
@@ -104,7 +79,6 @@ public class CustomerAgent extends Agent {
                         while (i < (agents.length)) {
                             if (!((agents[i].getName().getLocalName().equals("ams")) || (agents[i].getName().getLocalName().equals("df")) || (agents[i].getName().getLocalName().equals("rma")))) {
                                 meetingAgents[y] = agents[i].getName();
-                                //log(meetingAgents[y].getLocalName());
                                 y++;
                             }
                             i++;
@@ -114,7 +88,6 @@ public class CustomerAgent extends Agent {
                     }
                     //ADD BEHAVIOUR HERE
                     done_exec = true;
-                    //log("Add behavior");
                     myAgent.addBehaviour(new masterBehavior());
                 }
             }
@@ -173,8 +146,6 @@ public class CustomerAgent extends Agent {
                 case 0:
                     LogStatus="INIT";
                     logV("INIT",count_agree,count_disagree,ACCEPT);
-                    // COUNT Number of agent
-                    // numberOfAgent=X;
                     step = 3; // go to find the leader.
                     break;
 
@@ -208,8 +179,6 @@ public class CustomerAgent extends Agent {
                     cfp.setReplyWith("cfp" + System.currentTimeMillis()); //unique value
 
                     myAgent.send(cfp);
-                    //messTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(proposal_date),
-                      //      MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
                     logSEND("request MEETING", count_agree, count_disagree, ACCEPT);
                     pauseProg();
                     // 4. switch to waitNewProposal
@@ -217,20 +186,14 @@ public class CustomerAgent extends Agent {
                     count_agree++;
                     ACCEPT=true;
                     logV(" -> waitNewProposal",count_agree,count_disagree,ACCEPT);
-                    //pauseProg();
-                    //setLeader(false);
                     break;
 
                 // ---------- waitNewProposal --------------------
                 case 2:
                     LogStatus="WAIT";
-                    //if (stepWait == false)
-                    //{
-                    //logV("COUNT1",count_agree,count_disagree,ACCEPT);
                         //1. if not the leader,
                         if (leader == false && stepWait==false)
                         {
-
 
                             // a. wait for the leader agent's date for the meeting
                             logV("wait the date of the leader",count_agree,count_disagree,ACCEPT);
@@ -278,17 +241,7 @@ public class CustomerAgent extends Agent {
                                 block();
                             }
                         }
-                        //else
-                        //{
-                         //   stepWait=true;
-                        //}
-                    //}
-                    //else if (stepWait == true)
-                    //{
-                        //for everybody: receive the responses
-                        //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-                        //ACLMessage msg = myAgent.receive(mt);
-                    //logV("COUNT2",count_agree,count_disagree,ACCEPT);
+
                         ACLMessage msg = receive();
                         if ( ( msg != null || count_agree + count_disagree == meetingAgents.length))
                         {
@@ -299,7 +252,7 @@ public class CustomerAgent extends Agent {
                                 if ( msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
                                     count_disagree++;
                             }
-                            //logV("COUNT3",count_agree,count_disagree,ACCEPT);
+
                             // MEETING FIXED
                             if (count_agree == meetingAgents.length)
                             {
@@ -336,26 +289,23 @@ public class CustomerAgent extends Agent {
                                     step = 1;
                                     leader = true;
                                     logV("Meeting REFUSE : BECOME NEW LEADER",count_agree,count_disagree,ACCEPT);
-                                    pauseProg();
                                 }//else some refuse but not the agent, he waits for proposal step2
                                 else if (count_disagree > 1 && ACCEPT == false)
                                 {//
                                     step = 3;
-                                    logV("Meeting REFUSE : GO BATTLE",count_agree,count_disagree,ACCEPT);
-                                    pauseProg();
+                                    logV("Meeting REFUSE : GO BATTLE", count_agree, count_disagree, ACCEPT);
                                 }
                                 else
                                 {
                                     step = 2;
                                     logV("Meeting REFUSED by OTHERS : wait new meeting",count_agree,count_disagree,ACCEPT);
-                                    pauseProg();
                                 }
                                 leader = false;
                                 ACCEPT=false;
                                 count_agree=0;
                                 count_disagree=0;
                                 stepWait=false;
-
+                                pauseProg();
                             }
                         }
                         else
@@ -380,15 +330,12 @@ public class CustomerAgent extends Agent {
 
                     // Collect all proposals (cycle zone)
                     //collect proposals
-                    //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-                    //ACLMessage reply = myAgent.receive(mt);
                     ACLMessage reply = receive();
                     if (reply != null) {
                         if (reply.getPerformative() == ACLMessage.INFORM) {
                             //proposal received
                             logRECV(" message from [" + reply.getSender().getLocalName() + "]", count_agree, count_disagree, ACCEPT);
                             int getAleat = Integer.parseInt(reply.getContent());
-                            //log(" compare" + getAleat + "and " + bestAleat);
                             if ( getAleat > bestAleat) {
                                 //the best proposal as for now
                                 bestAleat = getAleat;
@@ -397,7 +344,6 @@ public class CustomerAgent extends Agent {
                             }
                         }
                         repliesCnt++;
-                        //log("meetingAgents.length="+meetingAgents.length);
                         if (repliesCnt >= meetingAgents.length) {
                             //all proposals have been received
                             if (myAleat > bestAleat) {
@@ -429,7 +375,6 @@ public class CustomerAgent extends Agent {
         }
 
         public boolean done() {
-            //log(" --> DONE step=" + step + " randomNumberSend=" + randomNumberSend);
             if (step == 4 && NUMBER_OF_MEETING==0) {
                 return true;
             } else {
@@ -460,16 +405,12 @@ public class CustomerAgent extends Agent {
     public void log(String log) {
         Date date = new Date();
         SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
-        // display time and date using toString()
-
         System.out.println("[" + ft.format(date) + "][" + getAID().getLocalName() + "]\t" + log);
     }
 
     public void logV(String log,int a,int b,boolean c) {
         Date date = new Date();
         SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
-        // display time and date using toString()
-
         System.out.println("[" + ft.format(date)
                 +"]["+a+"|"+b+"|"+c+"]["+LogStatus+"]["
                 +color+ getAID().getLocalName() +ANSI_RESET
@@ -479,8 +420,6 @@ public class CustomerAgent extends Agent {
     public void logSEND(String log,int a,int b,boolean c) {
         Date date = new Date();
         SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
-        // display time and date using toString()
-
         System.out.println("[" + ft.format(date) + "]["+a+"|"+b+"|"+c+"]["+LogStatus+"]["
                 +color+ getAID().getLocalName() +ANSI_RESET
                 + "]\t" + ANSI_GREEN+"[<-][SEND]"+log+ANSI_RESET);
@@ -489,8 +428,6 @@ public class CustomerAgent extends Agent {
     public void logRECV(String log,int a,int b,boolean c) {
         Date date = new Date();
         SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
-        // display time and date using toString()
-
         System.out.println("[" + ft.format(date) +"]["+a+"|"+b+"|"+c+"]["+LogStatus+"]["
                 +color+ getAID().getLocalName() +ANSI_RESET
                 + "]\t" + ANSI_PURPLE+"[->][RECV]"+log+ANSI_RESET);
