@@ -266,13 +266,14 @@ public class CustomerAgent extends Agent {
                         //ACLMessage msg = myAgent.receive(mt);
                     logV("COUNT2",count_agree,count_disagree,ACCEPT);
                         ACLMessage msg = receive();
-                        if (msg != null || (count_agree + count_disagree == meetingAgents.length))
+                        if ( ( msg != null || count_agree + count_disagree == meetingAgents.length))
                         {
 
-                            if (msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
+                            if (msg != null && msg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
                                 count_agree++;
-                            if (msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
+                            if (msg != null && msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
                                 count_disagree++;
+
                             logV("COUNT3",count_agree,count_disagree,ACCEPT);
                             // MEETING FIXED
                             if (count_agree == meetingAgents.length)
@@ -288,9 +289,13 @@ public class CustomerAgent extends Agent {
                                 {
                                     step=4;
                                 }
-                                //cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
+                                cal.putMeetingInDate(Integer.parseInt(day), Integer.parseInt(hour));
                                 //go to step 3 battle to know the next leader
                                 pauseProg();
+                                leader = false;
+                                ACCEPT=false;
+                                count_agree=0;
+                                count_disagree=0;
 
                                 // END OF DEFINE MEETING ? MAYBE WE STOP HERE ?
                             }
