@@ -85,11 +85,9 @@ public class CustomerAgent extends Agent {
                         meetingAgents = new AID[agents.length - 3];
                         int i = 0, y = 0;
                         while (i < (agents.length - 3)) {
-                            log(agents[i].getName().getLocalName().toString());
-
-                            if (!(agents[i].getName().getLocalName().equals("ams")) || (agents[i].getName().getLocalName().equals("df")) || (agents[i].getName().getLocalName().equals("rma"))) {
+                            if (!((agents[i].getName().getLocalName().equals("ams")) || (agents[i].getName().getLocalName().equals("df")) || (agents[i].getName().getLocalName().equals("rma")))) {
                                 meetingAgents[y] = agents[i].getName();
-                                log(meetingAgents[i].getLocalName());
+                                log(meetingAgents[y].getLocalName());
                                 y++;
                             }
                             i++;
@@ -276,11 +274,8 @@ public class CustomerAgent extends Agent {
                     // ---------- battleLeader --------------------
                 case 3:
 
-<<<<<<< HEAD
-                    log("\t[battleLeader]:\tEnter in battleLeader randomNumberSend=" + randomNumberSend);
-=======
+
                     log("[battleLeader]:Enter in battleLeader randomNumberSend="+randomNumberSend);
->>>>>>> a2e1a2f72ed9180ab3efaa586f0507c33601d860
                     // SendRandom number to other agent
                     if (randomNumberSend == false) {
                         myAleat = sendRandomNumber();
