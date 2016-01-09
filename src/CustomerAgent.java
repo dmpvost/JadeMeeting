@@ -344,7 +344,7 @@ public class CustomerAgent extends Agent {
 
             ACLMessage message = new ACLMessage(ACLMessage.CFP);
             for (int i = 0; i < meetingAgents.length; i++) {
-                if (!Objects.equals(meetingAgents[i].getLocalName(), myAgent.getLocalName())) {
+                if (!(meetingAgents[i].getLocalName().equals(myAgent.getLocalName()))) {
                     message.addReceiver(meetingAgents[i]);
                 }
             }
