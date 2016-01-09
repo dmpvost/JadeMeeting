@@ -284,10 +284,12 @@ public class CustomerAgent extends Agent {
 
                     // Collect all proposals (cycle zone)
                     //collect proposals
-                    MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-                    ACLMessage reply = myAgent.receive(mt);
+                    //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+                    //ACLMessage reply = myAgent.receive(mt);
+                    ACLMessage reply = receive();
                     if (reply != null) {
-                        if (reply.getPerformative() == ACLMessage.PROPAGATE) {
+                        log("REPLY ENTER ACL="+reply.getPerformative()+ "  ACL.INFORM="+ACLMessage.INFORM);
+                        if (reply.getPerformative() == ACLMessage.INFORM) {
                             //proposal received
                             int getAleat = Integer.parseInt(reply.getContent());
 
@@ -337,10 +339,17 @@ public class CustomerAgent extends Agent {
 
         public double sendRandomNumber() {
             double aleat = Math.random();
-            ACLMessage sendMess = new ACLMessage(ACLMessage.CFP);
-            sendMess.setPerformative(ACLMessage.PROPAGATE);
-            sendMess.setContent(String.valueOf((aleat)));
-            myAgent.send(sendMess);
+
+            ACLMessage message = new ACLMessage(ACLMessage.CFP);
+            message.addReceiver(new AID("said", AID.ISLOCALNAME));
+            message.setContent(String.valueOf((aleat)));
+            message.setPerformative(ACLMessage.INFORM);
+            send(message);
+
+            //ACLMessage sendMess = new ACLMessage(ACLMessage.CFP);
+            //sendMess.setPerformative(ACLMessage.PROPOSE);
+            //sendMess.setContent(String.valueOf((aleat)));
+            //myAgent.send(sendMess);
             return aleat;
         }
 
