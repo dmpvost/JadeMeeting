@@ -200,6 +200,7 @@ public class CustomerAgent extends Agent {
                 case 2:
                     //if (stepWait == false)
                     //{
+                    logV("COUNT1",count_agree,count_disagree,REFUSE);
                         //1. if not the leader,
                         if (leader == false && stepWait==false)
                         {
@@ -259,7 +260,7 @@ public class CustomerAgent extends Agent {
                         //for everybody: receive the responses
                         //MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
                         //ACLMessage msg = myAgent.receive(mt);
-                        log("count_agree="+count_agree+" count_disagree="+count_disagree);
+                    logV("COUNT2",count_agree,count_disagree,REFUSE);
                         ACLMessage msg = receive();
                         if (msg != null || (count_agree + count_disagree == meetingAgents.length))
                         {
@@ -268,7 +269,7 @@ public class CustomerAgent extends Agent {
                                 count_agree++;
                             if (msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
                                 count_disagree++;
-                            log("count_agree="+count_agree+" count_disagree="+count_disagree+ "REFUSE="+REFUSE);
+                            logV("COUNT3",count_agree,count_disagree,REFUSE);
                             // MEETING FIXED
                             if (count_agree == meetingAgents.length)
                             {
@@ -424,6 +425,14 @@ public class CustomerAgent extends Agent {
         // display time and date using toString()
 
         System.out.println("[" + ft.format(date) + "][" + getAID().getLocalName() + "]\t" + log);
+    }
+
+    public void logV(String log,int a,int b,boolean c) {
+        Date date = new Date();
+        SimpleDateFormat ft = new SimpleDateFormat("HH:mm:ss.SS");
+        // display time and date using toString()
+
+        System.out.println("[" + ft.format(date) + "][" + getAID().getLocalName() + "]["+a+"|"+b+"|"+c+"]\t" + log);
     }
 
     public  void pauseProg(){
