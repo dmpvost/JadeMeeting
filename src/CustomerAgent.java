@@ -158,6 +158,7 @@ public class CustomerAgent extends Agent {
                 case 1:
                     // 1. Become the new leader
                     setLeader(true);
+                    leader=true;
                     log("[Leader]:become LEADER");
                     pauseProg();
                     // 2. Look for the best date to propose a meeting
@@ -202,8 +203,6 @@ public class CustomerAgent extends Agent {
                         //1. if not the leader,
                         if (leader == false && stepWait==false)
                         {
-                            count_agree++; // simule le choix du leader
-
 
 
                             // a. wait for the leader agent's date for the meeting
@@ -219,6 +218,7 @@ public class CustomerAgent extends Agent {
                                 String[] parts = date.split("-");
                                 day = parts[0];
                                 hour = parts[1];
+                                count_agree++; // simule le choix du leader
 
                                 double possibility = cal.checkFreeHour(Integer.parseInt(day), Integer.parseInt(hour));
                                 if (possibility != 0)
@@ -268,7 +268,7 @@ public class CustomerAgent extends Agent {
                                 count_agree++;
                             if (msg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
                                 count_disagree++;
-                            log("count_agree="+count_agree+" count_disagree="+count_disagree);
+                            log("count_agree="+count_agree+" count_disagree="+count_disagree+ "REFUSE="+REFUSE);
                             // MEETING FIXED
                             if (count_agree == meetingAgents.length)
                             {
