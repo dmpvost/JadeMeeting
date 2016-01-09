@@ -1,31 +1,23 @@
+import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.*;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.TickerBehaviour;
+import jade.domain.AMSService;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.AMSAgentDescription;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.SearchConstraints;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.domain.DFService;
-import jade.domain.FIPAException;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by user on 07/01/2016.
  */
-
-import jade.core.Agent;
-import jade.core.AID;
-import jade.core.behaviours.*;
-import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
-import jade.domain.DFService;
-import jade.domain.FIPAException;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.domain.AMSService;
-import jade.domain.FIPAAgentManagement.*;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Objects;
 
 public class CustomerAgent extends Agent {
 
@@ -280,6 +272,7 @@ public class CustomerAgent extends Agent {
                     if (randomNumberSend == false) {
                         myAleat = sendRandomNumber();
                         randomNumberSend = true;
+                        repliesCnt++;
                         log("[battleLeader]:Send random number =" + myAleat);
                     }
 
@@ -294,14 +287,16 @@ public class CustomerAgent extends Agent {
                             //proposal received
                             log("inside REPLY");
                             int getAleat = Integer.parseInt(reply.getContent());
-                            log(bestAgent.toString() + " compare" + getAleat + "and " + bestAleat);
-                            if (bestAgent == null || getAleat < bestAleat) {
+                            log(" compare" + getAleat + "and " + bestAleat);
+                            if ( getAleat > bestAleat) {
                                 //the best proposal as for now
                                 bestAleat = getAleat;
                                 bestAgent = reply.getSender();
+                                log("bestAleat found = "+bestAleat);
                             }
                         }
                         repliesCnt++;
+                        log("meetingAgents.length="+meetingAgents.length);
                         if (repliesCnt >= meetingAgents.length) {
                             //all proposals have been received
                             if (myAleat > bestAleat) {
