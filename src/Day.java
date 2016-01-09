@@ -13,11 +13,13 @@ public class Day {
     }
 
     public double getStatusHours(int index) {
+        tabHours[index].setToLook();
         return tabHours[index].getValue();
     }
 
     public void setStatusHours(int index, int value) {
         tabHours[index].setValue(value);
+        tabHours[index].setToLook();
     }
 
     public Hour getPreferedHour() {

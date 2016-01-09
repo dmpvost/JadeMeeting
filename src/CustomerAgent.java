@@ -147,7 +147,7 @@ public class CustomerAgent extends Agent {
         private int step = 0;
         private MessageTemplate messTemplate;
         private int numberOfAgent = 0;
-        private int count_disagree = 0;
+        private int count_disagree = 0  ;
         private int count_agree = 0;
         private int NUMBER_OF_MEETING=3;
 
