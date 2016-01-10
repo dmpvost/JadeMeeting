@@ -12,13 +12,13 @@ public class Hour {
     private int hour;
     /* save the index of the date calendar in hour.*/
 
-    public Hour(int day, int hour) {
+    public Hour(int day, int hour,double proba) {
         look = false;
         this.day = day;
         this.hour = hour;
         double available = Math.random();
         // give 40% to the agent to not be available.
-        if (available < 0.4)
+        if (available < proba)
             event = 0;
         else
             event = Math.random();

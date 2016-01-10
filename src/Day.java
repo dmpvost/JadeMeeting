@@ -5,10 +5,10 @@ public class Day {
 
     private Hour[] tabHours;
 
-    public Day(int day) {
-        tabHours = new Hour[3];
+    public Day(int day,int nbhours,double proba) {
+        tabHours = new Hour[nbhours];
         for (int i = 0; i < tabHours.length; i++) {
-            tabHours[i] = new Hour(day, i);
+            tabHours[i] = new Hour(day, i,proba);
         }
     }
 
@@ -41,7 +41,7 @@ public class Day {
         if (find = false) {
             // this case, is a case of error.
             // We need to think about it after...
-            Hour not_found = new Hour(0, 0);
+            Hour not_found = new Hour(-1, -1 , -1);
             return not_found;
         } else
             return tabHours[hour];
